@@ -1,0 +1,241 @@
+{
+  "owner": {
+    "displayName": "Abdikhaliq Abdi",
+    "shortName": "AKASH",
+    "handle": "@SG_AKASH",
+    "school": "University of Nairobi · School of Medicine (MBChB)",
+    "role": "Medical student leader, University of Nairobi. Community builder.",
+    "location": "Nairobi & Northern Kenya"
+  },
+  "nav": [
+    { "index": "01", "label": "Home", "href": "/" },
+    { "index": "02", "label": "About", "href": "/about" },
+    { "index": "03", "label": "Leadership", "href": "/leadership" },
+    { "index": "04", "label": "Initiatives", "href": "/initiatives" },
+    { "index": "05", "label": "Contact", "href": "/contact" }
+  ],
+  "home": {
+    "kicker": "Abdikhaliq Abdi · SG_AKASH · UoN School of Medicine",
+    "headlineBefore": "Medicine, ",
+    "headlineItalic": "advocacy & service.",
+    "subline": "Medical student and Head of Public Service at UNSA Council, former AMSUN Secretary General, and founder of a Northern Kenya education CBO. Listening closely—then acting where it counts.",
+    "ctaLabel": "Hold to listen",
+    "secondaryCtaLabel": "View Leadership Record",
+    "proofStrip": [
+      {
+        "label": "Student Welfare Win",
+        "value": "50%",
+        "detail": "Reduction in University of Nairobi hostel fees won through administration talks and peaceful mobilization."
+      },
+      {
+        "label": "Medical & Council Service",
+        "value": "UNSA · AMSUN",
+        "detail": "Head of Public Service (Current), UNSA Chief of Staff (2025), and AMSUN Secretary General (2024)."
+      },
+      {
+        "label": "Community Outreach",
+        "value": "Northern Kenya CBO",
+        "detail": "Mentorship and academic resources for primary and secondary students across Northern Kenya."
+      }
+    ],
+    "beats": [
+      {
+        "id": "listen",
+        "index": "01 / 05",
+        "eyebrow": "Clinical Listening",
+        "title": "Every diagnosis begins by listening.",
+        "body": "At the University of Nairobi School of Medicine, training teaches you to hear what is unspoken before prescribing a solution. The same discipline guides student representation."
+      },
+      {
+        "id": "amsun",
+        "index": "02 / 05",
+        "eyebrow": "AMSUN · 2024",
+        "title": "Secretary General for medical students.",
+        "body": "Coordinated welfare, academic advocacy, and clinical rotation support for the Association of Medical Students of the University of Nairobi."
+      },
+      {
+        "id": "hostels",
+        "index": "03 / 05",
+        "eyebrow": "Tangible Policy",
+        "title": "Fifty percent off student hostel fees.",
+        "body": "Led structured negotiations with university leadership alongside peaceful student demonstrations—cutting accommodation barriers in half."
+      },
+      {
+        "id": "unsa",
+        "index": "04 / 05",
+        "eyebrow": "UNSA Council · 2025—Now",
+        "title": "Chief of Staff to Head of Public Service.",
+        "body": "From aligning council operations in 2025 to leading public service delivery across University of Nairobi campuses today."
+      },
+      {
+        "id": "cbo",
+        "index": "05 / 05",
+        "eyebrow": "Northern Kenya",
+        "title": "Taking the bridge back home.",
+        "body": "Founded a Community-Based Organization mentoring primary and secondary learners in Northern Kenya so opportunity is never decided by geography."
+      }
+    ],
+    "marqueeWords": ["Medicine", "Advocacy", "Service", "Community"],
+    "leadershipTeaser": {
+      "index": "01",
+      "kicker": "University of Nairobi · UNSA & AMSUN",
+      "title": "Advocacy with measurable outcomes.",
+      "stat": "50%",
+      "statLabel": "Hostel fee reduction negotiated for University of Nairobi students through disciplined representation.",
+      "linkLabel": "Explore Leadership & Impact",
+      "href": "/leadership"
+    },
+    "initiativesTeaser": {
+      "index": "02",
+      "kicker": "CBO Founder · Northern Kenya",
+      "title": "Mentorship across classrooms.",
+      "body": "Equipping primary and secondary school students in Northern Kenya with academic guidance, mentorship, and practical encouragement.",
+      "linkLabel": "Explore Initiatives",
+      "href": "/initiatives"
+    },
+    "reels": [
+      {
+        "slot": "video-reel-1",
+        "index": "01",
+        "title": "Campus Advocacy & Hostel Drive",
+        "context": "@SG_AKASH · TikTok Dispatch",
+        "tiktokId": "7520715335696207109",
+        "tiktokUrl": "https://www.tiktok.com/@sg_akash/video/7520715335696207109?is_from_webapp=1&sender_device=pc&web_id=7652814405725439506",
+        "isPhoto": false,
+        "summary": "Field dispatch from University of Nairobi student mobilization and administration welfare negotiations."
+      },
+      {
+        "slot": "video-reel-2",
+        "index": "02",
+        "title": "UNSA Public Service Address",
+        "context": "@SG_AKASH · TikTok Dispatch",
+        "tiktokId": "7527451792440085766",
+        "tiktokUrl": "https://www.tiktok.com/@sg_akash/video/7527451792440085766?is_from_webapp=1&sender_device=pc&web_id=7652814405725439506",
+        "isPhoto": false,
+        "summary": "Public service briefings and direct student council engagements across University of Nairobi campuses."
+      },
+      {
+        "slot": "video-reel-3",
+        "index": "03",
+        "title": "Leadership & Community Voice",
+        "context": "@SG_AKASH · TikTok Dispatch",
+        "tiktokId": "7510511156503645445",
+        "tiktokUrl": "https://www.tiktok.com/@sg_akash/video/7510511156503645445?is_from_webapp=1&sender_device=pc&web_id=7652814405725439506",
+        "isPhoto": false,
+        "summary": "Reflections on principled representation, medical studies, and community service back home."
+      },
+      {
+        "slot": "video-reel-4",
+        "index": "04",
+        "title": "Photo Essay · Silent Series",
+        "context": "@SG_AKASH · Silent Photo Post",
+        "tiktokId": "7623237421131468053",
+        "tiktokUrl": "https://www.tiktok.com/@sg_akash/photo/7623237421131468053?is_from_webapp=1&sender_device=pc&web_id=7652814405725439506",
+        "isPhoto": true,
+        "summary": "Silent still-frame photographic series curated with no audio playback."
+      }
+    ],
+    "finalCta": {
+      "kicker": "Partnerships · Speaking · Mentorship",
+      "headline": "Let's connect.",
+      "body": "Open for civic collaborations, student governance dialogue, educational sponsorships, and Northern Kenya community partnerships.",
+      "linkLabel": "Start a conversation",
+      "href": "/contact"
+    }
+  },
+  "about": {
+    "kicker": "02 · Biography & Calling",
+    "title": "From Northern Kenya to UoN School of Medicine.",
+    "lead": "Training to heal individuals in the clinic while organizing systems that serve thousands on campus and back home.",
+    "bio": "Abdikhaliq Abdi (SG_AKASH) is a Medical Student (MBChB) at the University of Nairobi School of Medicine, Head of Public Service at the UNSA Council, former UNSA Chief of Staff (2025), and former Secretary General of the Association of Medical Students of the University of Nairobi (AMSUN, 2024). Guided by both bedside discipline and public accountability, his work links student welfare policy with grassroots educational mentorship across Northern Kenya.",
+    "chapters": [
+      {
+        "index": "01",
+        "heading": "Origins & Resilience",
+        "text": "Growing up with first-hand awareness of the educational gaps in Northern Kenya forged a lasting commitment: reaching the university gate is never the finish line—it is the obligation to hold that door open for the next student."
+      },
+      {
+        "index": "02",
+        "heading": "Medical Training at UoN",
+        "text": "Studying Medicine & Surgery (MBChB) at the University of Nairobi sharpened both analytical rigor and empathy—knowing that wellbeing depends as much on housing, dignity, and access as on clinical care."
+      },
+      {
+        "index": "03",
+        "heading": "Why Public Service",
+        "text": "Serving as AMSUN Secretary General, UNSA Chief of Staff, and now UNSA Head of Public Service proved that principled dialogue backed by organized student solidarity moves institutions."
+      }
+    ]
+  },
+  "leadership": {
+    "kicker": "03 · Track Record & Governance",
+    "philosophyTitle": "My Leadership Philosophy",
+    "philosophyText": "I believe leadership is not about holding a title, but about using your position to serve others and create tangible, positive change. At the University of Nairobi, I have had the honor of serving in various capacities, always with the goal of improving the student experience.",
+    "positions": [
+      {
+        "role": "Head of Public Service",
+        "org": "UNSA Council",
+        "period": "Current",
+        "focus": "Leading student public service initiatives, campus welfare escalation, and administrative accountability across University of Nairobi faculties."
+      },
+      {
+        "role": "Chief of Staff",
+        "org": "UNSA Council",
+        "period": "2025",
+        "focus": "Directed executive coordination, council policy execution, and cross-campus communication within the student government."
+      },
+      {
+        "role": "Secretary General",
+        "org": "AMSUN · School of Medicine",
+        "period": "2024",
+        "focus": "Represented medical students in the Association of Medical Students of the University of Nairobi, advancing clinical welfare and academic advocacy."
+      }
+    ],
+    "achievements": [
+      {
+        "index": "01",
+        "title": "Championed a 50% Reduction in Hostel Fees",
+        "text": "Led a successful campaign, including negotiations with the university administration and peaceful demonstrations, that reduced hostel fees by half across University of Nairobi residences.",
+        "stat": "50%",
+        "slot": "leadership-achievement-1"
+      },
+      {
+        "index": "02",
+        "title": "Executive Coordination & Student Welfare Delivery",
+        "text": "From UNSA Council Chief of Staff (2025) to Head of Public Service today, streamlined grievance resolution channels and strengthened student-to-administration accountability.",
+        "stat": "UNSA",
+        "slot": "leadership-achievement-2"
+      },
+      {
+        "index": "03",
+        "title": "Clinical Representation at AMSUN School of Medicine",
+        "text": "As Secretary General of AMSUN in 2024, championed clinical rotation schedules, academic welfare representation, and peer medical student unity at Kenyatta National Hospital campus.",
+        "stat": "AMSUN",
+        "slot": "leadership-achievement-3"
+      }
+    ]
+  },
+  "initiatives": {
+    "kicker": "04 · Community-Based Organization",
+    "title": "What I Offer: Community Empowerment & Mentorship",
+    "text": "Recognizing the challenges I overcame, I founded a Community-Based Organization (CBO) dedicated to empowering the education sector across Kenya, with a special focus on Northern Kenya. My CBO runs mentorship programs for both primary and secondary school students, providing them with the guidance, encouragement, and resources they need to excel academically and in life.",
+    "pillars": [
+      { "index": "01", "title": "Primary School Foundations", "detail": "Early literacy encouragement, study habits, and role-model visibility in underserved classrooms." },
+      { "index": "02", "title": "Secondary Exam & Career Guidance", "detail": "Subject selection, KCSE preparation workshops, and pathways into medicine, STEM, and public leadership." },
+      { "index": "03", "title": "Resource Mobilization", "detail": "Connecting learning materials, university peer mentors, and community support directly to schools." }
+    ],
+    "stats": [
+      { "label": "School Tracks Served", "value": "Primary & Secondary" },
+      { "label": "Geographic Focus", "value": "Northern Kenya" },
+      { "label": "Core Mission", "value": "Mentorship & Books" }
+    ]
+  },
+  "contact": {
+    "kicker": "05 · Direct Channels",
+    "headline": "Let's connect.",
+    "text": "I'm always open to connecting with fellow leaders, changemakers, and anyone passionate about creating a better future. Let's connect.",
+    "phones": ["+254 724 747 984", "+254 705 884 033"],
+    "email": "abdikhaliqabdi9@gmail.com",
+    "tiktok": "@SG_AKASH",
+    "instagram": "@SG_AKASH"
+  }
+}

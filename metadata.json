@@ -1,0 +1,6 @@
+{
+  "name": "Akash Portfolio",
+  "description": "Personal portfolio of Abdikhaliq Abdi (SG_AKASH) — Student leader at the University of Nairobi and community builder.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
