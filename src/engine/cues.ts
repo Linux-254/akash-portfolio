@@ -28,34 +28,37 @@ const DEFAULT_SHOT: CueShot = {
   scaleMul: 1,
 };
 
-// Stethoscope starts full behind the hero, showcases exploded parts mid-scroll,
-// and gently settles smaller around the viewport center across all routes & viewports.
+// Stethoscope begins centered before scroll, moves dynamically around within safe viewport
+// bounds during scroll while showcasing its exploded anatomy, and reforms back at center.
 export const HOME_CUES: CameraCue[] = [
-  { id: "hero", at: 0.0, shot: { frame: 148, polar: 12, azimuth: 16, offsetX: 0.05, offsetY: 0.01, explode: 0, timeScale: 1, scaleMul: 1.0 } },
-  { id: "close", at: 0.34, shot: { frame: 124, polar: 20, azimuth: -16, offsetX: 0.02, offsetY: 0.0, explode: 0.12, timeScale: 0.3, scaleMul: 0.94 } },
-  { id: "apart", at: 0.78, shot: { frame: 182, polar: 42, azimuth: 34, offsetX: 0.0, offsetY: 0.01, explode: 0.92, timeScale: 0.55, scaleMul: 0.86 } },
-  { id: "around", at: 1.18, shot: { frame: 174, polar: 52, azimuth: 78, offsetX: 0.02, offsetY: -0.01, explode: 0.42, timeScale: 0.72, scaleMul: 0.74 } },
-  { id: "rebuild", at: 1.56, shot: { frame: 166, polar: 20, azimuth: 14, offsetX: 0.02, offsetY: -0.02, explode: 0, timeScale: 0.85, scaleMul: 0.62 } },
-  { id: "outro", at: 2.0, shot: { frame: 162, polar: 12, azimuth: -10, offsetX: 0.02, offsetY: -0.02, explode: 0, timeScale: 0.9, scaleMul: 0.56 } },
+  { id: "hero", at: 0.0, shot: { frame: 150, polar: 12, azimuth: 16, offsetX: 0.0, offsetY: 0.0, explode: 0, timeScale: 1, scaleMul: 0.98 } },
+  { id: "glide-left", at: 0.34, shot: { frame: 142, polar: 22, azimuth: -24, offsetX: -0.26, offsetY: 0.08, explode: 0.14, timeScale: 0.45, scaleMul: 0.90 } },
+  { id: "apart-right", at: 0.76, shot: { frame: 184, polar: 42, azimuth: 36, offsetX: 0.25, offsetY: -0.05, explode: 0.94, timeScale: 0.6, scaleMul: 0.84 } },
+  { id: "orbit-upper", at: 1.18, shot: { frame: 174, polar: 52, azimuth: 78, offsetX: -0.20, offsetY: 0.14, explode: 0.48, timeScale: 0.75, scaleMul: 0.76 } },
+  { id: "recollect", at: 1.60, shot: { frame: 164, polar: 20, azimuth: 12, offsetX: 0.05, offsetY: -0.03, explode: 0.06, timeScale: 0.85, scaleMul: 0.66 } },
+  { id: "outro", at: 2.0, shot: { frame: 158, polar: 12, azimuth: -8, offsetX: 0.0, offsetY: 0.0, explode: 0, timeScale: 0.9, scaleMul: 0.58 } },
 ];
 
 export const ROUTE_CUES: Record<string, CameraCue[]> = {
   "/about": [
-    { id: "about-a", at: 0, shot: { frame: 162, polar: 18, azimuth: -20, offsetX: 0.03, offsetY: 0.0, explode: 0, timeScale: 0.8, scaleMul: 0.68 } },
-    { id: "about-b", at: 2, shot: { frame: 158, polar: 32, azimuth: 20, offsetX: 0.02, offsetY: -0.02, explode: 0.1, timeScale: 0.8, scaleMul: 0.58 } },
+    { id: "about-start", at: 0, shot: { frame: 162, polar: 18, azimuth: -18, offsetX: 0.0, offsetY: 0.0, explode: 0, timeScale: 0.8, scaleMul: 0.70 } },
+    { id: "about-roam", at: 1, shot: { frame: 170, polar: 32, azimuth: 28, offsetX: 0.22, offsetY: 0.08, explode: 0.46, timeScale: 0.7, scaleMul: 0.68 } },
+    { id: "about-center", at: 2, shot: { frame: 158, polar: 20, azimuth: 12, offsetX: 0.0, offsetY: 0.0, explode: 0, timeScale: 0.85, scaleMul: 0.58 } },
   ],
   "/leadership": [
-    { id: "lead-a", at: 0, shot: { frame: 156, polar: 18, azimuth: 14, offsetX: 0.03, offsetY: 0.0, explode: 0, timeScale: 1, scaleMul: 0.74 } },
-    { id: "lead-b", at: 1, shot: { frame: 176, polar: 38, azimuth: 48, offsetX: 0.0, offsetY: -0.01, explode: 0.38, timeScale: 0.55, scaleMul: 0.66 } },
-    { id: "lead-c", at: 2, shot: { frame: 160, polar: 18, azimuth: -14, offsetX: 0.02, offsetY: -0.02, explode: 0, timeScale: 0.9, scaleMul: 0.58 } },
+    { id: "lead-start", at: 0, shot: { frame: 158, polar: 18, azimuth: 14, offsetX: 0.0, offsetY: 0.0, explode: 0, timeScale: 0.9, scaleMul: 0.74 } },
+    { id: "lead-roam", at: 1, shot: { frame: 176, polar: 38, azimuth: -32, offsetX: -0.22, offsetY: 0.06, explode: 0.52, timeScale: 0.6, scaleMul: 0.68 } },
+    { id: "lead-center", at: 2, shot: { frame: 160, polar: 16, azimuth: -10, offsetX: 0.0, offsetY: 0.0, explode: 0, timeScale: 0.9, scaleMul: 0.58 } },
   ],
   "/initiatives": [
-    { id: "init-a", at: 0, shot: { frame: 166, polar: 24, azimuth: -24, offsetX: 0.02, offsetY: 0.0, explode: 0.1, timeScale: 0.85, scaleMul: 0.70 } },
-    { id: "init-b", at: 2, shot: { frame: 160, polar: 36, azimuth: 28, offsetX: 0.02, offsetY: -0.02, explode: 0.16, timeScale: 0.85, scaleMul: 0.58 } },
+    { id: "init-start", at: 0, shot: { frame: 164, polar: 22, azimuth: -20, offsetX: 0.0, offsetY: 0.0, explode: 0, timeScale: 0.85, scaleMul: 0.72 } },
+    { id: "init-roam", at: 1, shot: { frame: 174, polar: 36, azimuth: 30, offsetX: 0.22, offsetY: -0.06, explode: 0.48, timeScale: 0.7, scaleMul: 0.66 } },
+    { id: "init-center", at: 2, shot: { frame: 160, polar: 20, azimuth: 14, offsetX: 0.0, offsetY: 0.0, explode: 0, timeScale: 0.85, scaleMul: 0.58 } },
   ],
   "/contact": [
-    { id: "contact-a", at: 0, shot: { frame: 174, polar: 16, azimuth: 10, offsetX: 0.02, offsetY: -0.01, explode: 0, timeScale: 0.5, scaleMul: 0.64 } },
-    { id: "contact-b", at: 2, shot: { frame: 170, polar: 20, azimuth: 16, offsetX: 0.02, offsetY: -0.02, explode: 0, timeScale: 0.5, scaleMul: 0.58 } },
+    { id: "contact-start", at: 0, shot: { frame: 170, polar: 16, azimuth: 10, offsetX: 0.0, offsetY: 0.0, explode: 0, timeScale: 0.65, scaleMul: 0.66 } },
+    { id: "contact-roam", at: 1, shot: { frame: 178, polar: 26, azimuth: -22, offsetX: -0.18, offsetY: 0.06, explode: 0.28, timeScale: 0.6, scaleMul: 0.64 } },
+    { id: "contact-center", at: 2, shot: { frame: 166, polar: 18, azimuth: 12, offsetX: 0.0, offsetY: 0.0, explode: 0, timeScale: 0.7, scaleMul: 0.58 } },
   ],
 };
 

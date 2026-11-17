@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import Lenis from "lenis";
 import gsap from "gsap";
@@ -12,6 +12,7 @@ gsap.registerPlugin(ScrollTrigger);
 export function SmoothScroll() {
   const { engineRef } = useApp();
   const pathname = usePathname();
+  const lenisRef = useRef<Lenis | null>(null);
 
   useEffect(() => {
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -29,6 +30,7 @@ export function SmoothScroll() {
       smoothWheel: true,
       touchMultiplier: 1.4,
     });
+    lenisRef.current = lenis;
 
     lenis.on("scroll", ({ progress }: { progress: number }) => {
       ScrollTrigger.update();
@@ -41,7 +43,14 @@ export function SmoothScroll() {
     gsap.ticker.add(tick);
     gsap.ticker.lagSmoothing(0);
 
+    // Refresh ScrollTrigger once webfonts finish loading so pin spacers & text heights match
+    document.fonts?.ready.then(() => {
+      lenis.resize();
+      ScrollTrigger.refresh();
+    });
+
     return () => {
+      lenisRef.current = null;
       gsap.ticker.remove(tick);
       lenis.destroy();
     };
@@ -49,10 +58,27 @@ export function SmoothScroll() {
 
   useEffect(() => {
     engineRef.current?.setScrollProgress(0);
-    const id = requestAnimationFrame(() => {
-      ScrollTrigger.refresh();
+    lenisRef.current?.scrollTo(0, { immediate: true });
+
+    let raf2 = 0;
+    const raf1 = requestAnimationFrame(() => {
+      raf2 = requestAnimationFrame(() => {
+        lenisRef.current?.resize();
+        ScrollTrigger.refresh();
+      });
     });
-    return () => cancelAnimationFrame(id);
+
+    // Secondary refresh after async images/layout settle
+    const settleTimer = window.setTimeout(() => {
+      lenisRef.current?.resize();
+      ScrollTrigger.refresh();
+    }, 320);
+
+    return () => {
+      cancelAnimationFrame(raf1);
+      cancelAnimationFrame(raf2);
+      clearTimeout(settleTimer);
+    };
   }, [pathname, engineRef]);
 
   return null;

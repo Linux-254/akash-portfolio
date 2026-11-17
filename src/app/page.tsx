@@ -22,6 +22,8 @@ export default function HomePage() {
   const [lockedNorth, setLockedNorth] = useState(false);
   const holdTimerRef = useRef<number>(0);
 
+  const statGiantRef = useRef<HTMLSpanElement | null>(null);
+
   useEffect(() => {
     const el = canvasWrapRef.current;
     const stage = stageRef.current;
@@ -41,6 +43,19 @@ export default function HomePage() {
         },
       });
 
+      gsap.from(".proof-item", {
+        y: 26,
+        opacity: 0,
+        duration: 0.75,
+        stagger: 0.12,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ".proof-strip",
+          start: "top 94%",
+          once: true,
+        },
+      });
+
       if (stage && track && window.innerWidth >= 1025) {
         gsap.to(track, {
           x: () => -(track.scrollWidth - window.innerWidth),
@@ -48,12 +63,74 @@ export default function HomePage() {
           scrollTrigger: {
             trigger: stage,
             pin: true,
-            scrub: 0.8,
+            scrub: 0.85,
             end: () => `+=${Math.max(track.scrollWidth - window.innerWidth, 800)}`,
             invalidateOnRefresh: true,
           },
         });
+      } else {
+        gsap.utils.toArray<HTMLElement>(".beat-panel").forEach((panel) => {
+          gsap.from(panel, {
+            y: 34,
+            opacity: 0,
+            duration: 0.8,
+            ease: "power3.out",
+            scrollTrigger: {
+              trigger: panel,
+              start: "top 86%",
+              once: true,
+            },
+          });
+        });
       }
+
+      if (statGiantRef.current) {
+        const counter = { val: 0 };
+        gsap.to(counter, {
+          val: 50,
+          duration: 1.35,
+          ease: "power2.out",
+          scrollTrigger: {
+            trigger: statGiantRef.current,
+            start: "top 85%",
+            once: true,
+          },
+          onUpdate: () => {
+            if (statGiantRef.current) statGiantRef.current.textContent = `${Math.round(counter.val)}%`;
+          },
+        });
+      }
+
+      gsap.utils.toArray<HTMLElement>(".teaser-grid .media-frame").forEach((frame) => {
+        gsap.fromTo(
+          frame,
+          { y: 36, scale: 0.96 },
+          {
+            y: -22,
+            scale: 1,
+            ease: "none",
+            scrollTrigger: {
+              trigger: frame,
+              start: "top bottom",
+              end: "bottom top",
+              scrub: 0.9,
+            },
+          },
+        );
+      });
+
+      gsap.from(".phone-reel", {
+        y: 44,
+        opacity: 0,
+        duration: 0.85,
+        stagger: 0.12,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ".phone-wall",
+          start: "top 84%",
+          once: true,
+        },
+      });
     }, canvasWrapRef);
 
     return () => ctx.revert();
@@ -184,7 +261,7 @@ export default function HomePage() {
               {home.leadershipTeaser.index} · {home.leadershipTeaser.kicker}
             </p>
             <WriteReveal as="h2" text={home.leadershipTeaser.title} className="section-heading" />
-            <span className="stat-giant">{home.leadershipTeaser.stat}</span>
+            <span ref={statGiantRef} className="stat-giant">{home.leadershipTeaser.stat}</span>
             <WriteReveal text={home.leadershipTeaser.statLabel} className="lead-copy" />
             <TransitionLink
               href={home.leadershipTeaser.href}

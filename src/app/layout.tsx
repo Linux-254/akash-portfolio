@@ -57,7 +57,12 @@ const newsreader = Newsreader({
   variable: "--font-newsreader",
 });
 
+const siteUrl = process.env.APP_URL?.startsWith("http")
+  ? process.env.APP_URL
+  : "http://localhost:3000";
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: "Akash Portfolio — Abdikhaliq Abdi (SG_AKASH)",
   description:
     "Abdikhaliq Abdi (SG_AKASH) — University of Nairobi Medical Student, UNSA Council Head of Public Service, former AMSUN Secretary General, and Northern Kenya CBO founder.",

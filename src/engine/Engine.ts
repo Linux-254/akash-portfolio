@@ -48,14 +48,14 @@ export class Engine {
   private viewportW = 1280;
   private viewportH = 800;
   private shotCurrent: CueShot = {
-    frame: 148,
+    frame: 150,
     polar: 12,
     azimuth: 16,
-    offsetX: 0.05,
-    offsetY: 0.01,
+    offsetX: 0.0,
+    offsetY: 0.0,
     explode: 0,
     timeScale: 1,
-    scaleMul: 1.0,
+    scaleMul: 0.98,
   };
   private lowFpsAccum = 0;
   private qualityStep = 0;
@@ -101,7 +101,7 @@ export class Engine {
     this.mats = createStethoscopeMaterials(theme);
     this.assembly = buildStethoscopeParts(this.mats, lowDetail);
     this.assembly.root.position.set(0, 0, 0);
-    this.assembly.root.scale.setScalar(0.02);
+    this.assembly.root.scale.setScalar(0.02 * 0.98);
     this.assembly.root.traverse((obj) => {
       if (obj instanceof THREE.Mesh) {
         obj.frustumCulled = false;
@@ -251,7 +251,7 @@ export class Engine {
       this.pointerCurrentX * 0.18 * pointerScale +
       swayAz;
 
-    const targetY = 0.08 + Math.sin(simTime * 0.42) * 0.018;
+    const targetY = 0.08 + Math.sin(simTime * 0.42) * 0.014;
     this.camera.position.set(
       Math.sin(azRad) * Math.cos(polarRad) * dist,
       targetY +
@@ -268,13 +268,28 @@ export class Engine {
     const viewHeight = 2 * Math.tan(THREE.MathUtils.degToRad(this.camera.fov * 0.5)) * dist;
     const viewWidth = viewHeight * this.camera.aspect;
 
-    const aspectTightness = THREE.MathUtils.clamp((this.camera.aspect - 0.55) / 0.9, 0, 1);
     const scaleFactor = this.shotCurrent.scaleMul * (1 + this.holdAmount * 0.05);
-    const shrinkPull = THREE.MathUtils.clamp((scaleFactor - 0.52) / 0.48, 0.18, 1);
+    const explodeExpand = 1 + Math.max(0, this.shotCurrent.explode) * 0.38;
 
-    // Keep offset gently anchored near the viewport center across all screen sizes and scales
-    const ox = this.shotCurrent.offsetX * viewWidth * aspectTightness * shrinkPull * 0.5;
-    const oy = this.shotCurrent.offsetY * viewHeight * shrinkPull * 0.45;
+    // Exact world-space stethoscope half-extents at current scale & explosion
+    const modelHalfW = 1.18 * scaleFactor * explodeExpand;
+    const modelHalfH = 1.65 * scaleFactor * explodeExpand;
+
+    // Safe travel envelope keeping the full stethoscope cleanly inside responsive viewport borders
+    const maxSafeOx = Math.max(0, viewWidth * 0.44 - modelHalfW);
+    const maxSafeOy = Math.max(0, viewHeight * 0.42 - modelHalfH);
+
+    // Smooth figure-8 drift that activates purely from scrolling and returns to 0 at start & end
+    const scrollProgress = THREE.MathUtils.clamp(this.scrollCurrent / 2, 0, 1);
+    const scrollEnvelope = Math.sin(scrollProgress * Math.PI);
+    const roamX = Math.sin(scrollProgress * Math.PI * 2) * 0.08 * scrollEnvelope;
+    const roamY = Math.sin(scrollProgress * Math.PI * 3) * 0.04 * scrollEnvelope;
+
+    const desiredOx = (this.shotCurrent.offsetX + roamX * scrollEnvelope) * viewWidth;
+    const desiredOy = (this.shotCurrent.offsetY + roamY * scrollEnvelope) * viewHeight;
+
+    const ox = THREE.MathUtils.clamp(desiredOx, -maxSafeOx, maxSafeOx);
+    const oy = THREE.MathUtils.clamp(desiredOy, -maxSafeOy, maxSafeOy);
 
     this.assembly.root.position
       .set(0.06 * scaleFactor, targetY - 0.16 * scaleFactor, 0)

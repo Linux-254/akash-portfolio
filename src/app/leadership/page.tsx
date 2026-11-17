@@ -29,7 +29,7 @@ export default function LeadershipPage() {
           val: 50,
           duration: 1.4,
           ease: "power2.out",
-          scrollTrigger: { trigger: statRef.current, start: "top 80%", once: true },
+          scrollTrigger: { trigger: statRef.current, start: "top 85%", once: true },
           onUpdate: () => {
             if (statRef.current) statRef.current.textContent = `${Math.round(counter.val)}%`;
           },
@@ -43,12 +43,36 @@ export default function LeadershipPage() {
           scrollTrigger: {
             trigger: stageRef.current,
             pin: true,
-            scrub: 0.8,
+            scrub: 0.85,
             end: () => `+=${Math.max(trackRef.current!.scrollWidth - window.innerWidth, 700)}`,
             invalidateOnRefresh: true,
           },
         });
+      } else {
+        gsap.utils.toArray<HTMLElement>(".beat-panel").forEach((panel) => {
+          gsap.from(panel, {
+            y: 34,
+            opacity: 0,
+            duration: 0.8,
+            ease: "power3.out",
+            scrollTrigger: { trigger: panel, start: "top 86%", once: true },
+          });
+        });
       }
+
+      gsap.utils.toArray<HTMLElement>(".achievement-row").forEach((row) => {
+        gsap.from(row, {
+          y: 38,
+          opacity: 0,
+          duration: 0.85,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: row,
+            start: "top 85%",
+            once: true,
+          },
+        });
+      });
     }, wrapRef);
 
     return () => ctx.revert();

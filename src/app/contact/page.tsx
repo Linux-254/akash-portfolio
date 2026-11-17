@@ -1,9 +1,13 @@
 "use client";
 
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import gsap from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
 import content from "@/content.json";
 import { Media } from "@/components/Media";
 import { WriteReveal } from "@/components/WriteReveal";
+
+gsap.registerPlugin(ScrollTrigger);
 
 const TOPICS = [
   "Leadership & Student Governance",
@@ -18,6 +22,7 @@ function buildWhatsAppUrl(phoneRaw: string, text: string): string {
 }
 
 export default function ContactPage() {
+  const wrapRef = useRef<HTMLDivElement | null>(null);
   const { contact, owner } = content;
   const [selectedPhone, setSelectedPhone] = useState(contact.phones[0]);
   const [senderName, setSenderName] = useState("");
@@ -25,6 +30,41 @@ export default function ContactPage() {
   const [message, setMessage] = useState(
     "Hello Abdikhaliq (SG_AKASH), I visited your portfolio and would like to connect regarding student leadership and community initiatives.",
   );
+
+  useEffect(() => {
+    const el = wrapRef.current;
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
+    const ctx = gsap.context(() => {
+      gsap.from(".contact-giant-line", {
+        y: 26,
+        opacity: 0,
+        duration: 0.7,
+        stagger: 0.08,
+        ease: "power3.out",
+        scrollTrigger: { trigger: ".contact-giant-list", start: "top 95%", once: true },
+      });
+
+      gsap.from(".whatsapp-composer", {
+        y: 34,
+        opacity: 0,
+        duration: 0.85,
+        ease: "power3.out",
+        scrollTrigger: { trigger: ".whatsapp-composer", start: "top 86%", once: true },
+      });
+
+      gsap.from(".social-card", {
+        y: 36,
+        opacity: 0,
+        duration: 0.8,
+        stagger: 0.1,
+        ease: "power3.out",
+        scrollTrigger: { trigger: ".social-strip", start: "top 86%", once: true },
+      });
+    }, wrapRef);
+
+    return () => ctx.revert();
+  }, []);
 
   const composedPayload = useMemo(() => {
     const prefix = senderName.trim()
@@ -36,7 +76,7 @@ export default function ContactPage() {
   const whatsAppHref = buildWhatsAppUrl(selectedPhone, composedPayload);
 
   return (
-    <div className="subpage-wrap">
+    <div ref={wrapRef} className="subpage-wrap">
       <section className="band subpage-hero">
         <div className="band-inner">
           <p className="mono-label">{contact.kicker} · {owner.school}</p>

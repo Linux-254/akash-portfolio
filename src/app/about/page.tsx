@@ -15,17 +15,48 @@ export default function AboutPage() {
 
   useEffect(() => {
     const el = wrapRef.current;
-    if (!el || window.innerWidth < 600 || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!el || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+
     const ctx = gsap.context(() => {
-      gsap.utils.toArray<HTMLElement>(".candid-tilt").forEach((card) => {
-        gsap.to(card, {
-          rotation: 0,
-          y: 0,
-          ease: "none",
-          scrollTrigger: { trigger: card, start: "top 85%", end: "top 35%", scrub: true },
+      gsap.utils.toArray<HTMLElement>(".story-chapter").forEach((chapter) => {
+        gsap.from(chapter, {
+          y: 36,
+          opacity: 0,
+          duration: 0.85,
+          ease: "power3.out",
+          scrollTrigger: {
+            trigger: chapter,
+            start: "top 86%",
+            once: true,
+          },
         });
       });
+
+      gsap.from(".brother-photo-frame", {
+        y: 42,
+        opacity: 0,
+        scale: 0.96,
+        duration: 0.9,
+        ease: "power3.out",
+        scrollTrigger: {
+          trigger: ".brother-tribute-band",
+          start: "top 82%",
+          once: true,
+        },
+      });
+
+      if (window.innerWidth >= 600) {
+        gsap.utils.toArray<HTMLElement>(".candid-tilt").forEach((card) => {
+          gsap.to(card, {
+            rotation: 0,
+            y: 0,
+            ease: "none",
+            scrollTrigger: { trigger: card, start: "top 88%", end: "top 35%", scrub: true },
+          });
+        });
+      }
     }, wrapRef);
+
     return () => ctx.revert();
   }, []);
 

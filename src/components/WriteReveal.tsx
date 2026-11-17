@@ -2,6 +2,7 @@
 
 import React, { useEffect, useMemo, useRef } from "react";
 import gsap from "gsap";
+import { useApp } from "./AppContext";
 
 interface WriteRevealProps {
   text: string;
@@ -22,6 +23,13 @@ export function WriteReveal({
 }: WriteRevealProps) {
   const ref = useRef<HTMLElement | null>(null);
   const glyphsHostRef = useRef<HTMLSpanElement | null>(null);
+  const { isTransitioning } = useApp();
+  const isTransitioningRef = useRef(isTransitioning);
+
+  useEffect(() => {
+    isTransitioningRef.current = isTransitioning;
+  }, [isTransitioning]);
+
   const fullText = italicSuffix ? `${text}${italicSuffix}` : text;
   const splitIdx = text.length;
 
@@ -64,8 +72,8 @@ export function WriteReveal({
     let revealedCount = 0;
     let displayFloat = 0;
     let target = 0;
-    let activeInTicker = false;
     let finished = false;
+    let enteredScreen = false;
 
     const applyCount = (nextCount: number) => {
       if (nextCount === revealedCount) return;
@@ -90,17 +98,27 @@ export function WriteReveal({
 
     const initialRect = node.getBoundingClientRect();
     const initialVh = window.innerHeight || 800;
-    const isInitialVisible = initialRect.top < initialVh * 0.96;
+    const initialVw = window.innerWidth || 1200;
+    const isInitialVisible =
+      initialRect.top < initialVh * 0.94 &&
+      initialRect.bottom > 0 &&
+      initialRect.left < initialVw * 0.96 &&
+      initialRect.right > 0;
 
-    // Auto-reveal and above-the-fold headlines glide smoothly without jitter right after paint
+    // Hero / above-the-fold typing waits until page reveal starts, then types at a crisp visible cadence
     if (autoReveal || isInitialVisible) {
-      const rate = Math.max(total / 0.48, 85);
+      let waitElapsed = 0;
+      const rate = Math.min(Math.max(total / 1.15, 34), 68);
       const introTick = (_time: number, deltaTime: number) => {
         if (finished) {
           gsap.ticker.remove(introTick);
           return;
         }
         const dt = Math.min(Math.max(deltaTime / 1000, 0.004), 0.05);
+        if (isTransitioningRef.current && waitElapsed < 0.7) {
+          waitElapsed += dt;
+          return;
+        }
         displayFloat = Math.min(total, displayFloat + rate * dt);
         applyCount(Math.floor(displayFloat));
         if (displayFloat >= total) {
@@ -114,64 +132,62 @@ export function WriteReveal({
       };
     }
 
-    const updateTargetFromViewport = () => {
+    // Below-the-fold & horizontal-track scroll typing: visibly writes out as the block enters viewport
+    const updateFromViewport = (dt: number) => {
+      if (finished) return;
       const vh = window.innerHeight || 800;
+      const vw = window.innerWidth || 1200;
       const rect = node.getBoundingClientRect();
-      if (rect.top < vh * 0.98 && rect.bottom > 0) {
-        const startY = vh * 0.96;
-        const endY = vh * 0.34;
-        const progress = Math.min(Math.max((startY - rect.top) / (startY - endY), 0), 1);
-        let scrollTarget = Math.round(progress * total);
 
-        if (rect.bottom <= vh * 0.9 || rect.top <= vh * 0.42 || progress >= 0.6) {
+      const inVertical = rect.top < vh * 0.92 && rect.bottom > 0;
+      const inHorizontal = rect.left < vw * 0.95 && rect.right > vw * 0.02;
+
+      if (inVertical && inHorizontal) {
+        enteredScreen = true;
+        const vProg = Math.min(
+          Math.max((vh * 0.92 - rect.top) / (vh * 0.44), 0),
+          1,
+        );
+        const hProg = Math.min(
+          Math.max((vw * 0.95 - rect.left) / (vw * 0.42), 0),
+          1,
+        );
+        const combined = Math.min(vProg, hProg);
+        let scrollTarget = Math.round(combined * total);
+
+        if (combined >= 0.68 || (rect.top < vh * 0.46 && hProg >= 0.42)) {
           scrollTarget = total;
         }
-        target = Math.max(target, scrollTarget);
+        // Once visibly entering viewport, ensure smooth minimum forward progress
+        target = Math.max(target, scrollTarget, Math.min(total, Math.round(total * 0.2)));
+      } else if (enteredScreen && rect.bottom <= vh * 0.4) {
+        target = total;
+      }
+
+      if (enteredScreen && target > 0 && displayFloat < target) {
+        const gap = target - displayFloat;
+        const rate = Math.min(Math.max(total * 1.15, 36), 88) + gap * 4.5;
+        displayFloat = Math.min(target, displayFloat + rate * dt);
+        applyCount(Math.floor(displayFloat));
+      } else if (enteredScreen && target >= total && displayFloat < total) {
+        const rate = Math.min(Math.max(total * 1.15, 36), 88);
+        displayFloat = Math.min(total, displayFloat + rate * dt);
+        applyCount(Math.floor(displayFloat));
       }
     };
 
-    const tickerCallback = (_time: number, deltaTime: number) => {
+    const tick = (_time: number, deltaTime: number) => {
       if (finished) {
-        gsap.ticker.remove(tickerCallback);
-        activeInTicker = false;
+        gsap.ticker.remove(tick);
         return;
       }
       const dt = Math.min(Math.max(deltaTime / 1000, 0.004), 0.05);
-      updateTargetFromViewport();
-
-      if (displayFloat < target) {
-        const gap = target - displayFloat;
-        const speed = Math.max(110, total * 2.4) + gap * 10.5;
-        displayFloat = Math.min(target, displayFloat + speed * dt);
-        applyCount(Math.floor(displayFloat));
-      }
-
-      if (revealedCount >= total) {
-        gsap.ticker.remove(tickerCallback);
-        activeInTicker = false;
-      }
+      updateFromViewport(dt);
     };
 
-    const observer = new IntersectionObserver(
-      (entries) => {
-        const entry = entries[0];
-        if (!entry) return;
-        if (entry.isIntersecting && !finished && !activeInTicker) {
-          activeInTicker = true;
-          updateTargetFromViewport();
-          target = Math.max(target, Math.round(total * 0.25));
-          gsap.ticker.add(tickerCallback);
-        }
-      },
-      { rootMargin: "120px 0px" },
-    );
-    observer.observe(node);
-
+    gsap.ticker.add(tick);
     return () => {
-      observer.disconnect();
-      if (activeInTicker) {
-        gsap.ticker.remove(tickerCallback);
-      }
+      gsap.ticker.remove(tick);
     };
   }, [tokens, autoReveal]);
 

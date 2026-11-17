@@ -356,7 +356,6 @@ export function PaintTransition() {
             origin,
             () => {
               setMenuOpen(false);
-              ScrollTrigger.getAll().forEach((st) => st.kill());
               window.scrollTo(0, 0);
               router.push(href);
               engineRef.current?.setRoute(href);
@@ -392,7 +391,6 @@ export function PaintTransition() {
     registerTransition((href) => {
       if (reduced) {
         setMenuOpen(false);
-        ScrollTrigger.getAll().forEach((st) => st.kill());
         router.push(href);
         window.scrollTo(0, 0);
         return;
@@ -406,7 +404,6 @@ export function PaintTransition() {
       router.prefetch(href);
       window.setTimeout(async () => {
         setMenuOpen(false);
-        ScrollTrigger.getAll().forEach((st) => st.kill());
         window.scrollTo(0, 0);
         router.push(href);
         await waitForRouteIfNeeded(href);
