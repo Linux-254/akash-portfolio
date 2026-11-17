@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import content from "@/content.json";
 import { useApp } from "./AppContext";
 import { TransitionLink } from "./TransitionLink";
@@ -16,6 +17,7 @@ const PREVIEW_SLOTS: Record<string, string> = {
 
 export function NavOverlay() {
   const { menuOpen, toggleMenuWithWater } = useApp();
+  const router = useRouter();
   const [hoveredHref, setHoveredHref] = useState<string | null>(null);
   const [previewPos, setPreviewPos] = useState({ x: 0, y: 0 });
   const overlayRef = useRef<HTMLDivElement | null>(null);
@@ -27,6 +29,7 @@ export function NavOverlay() {
       document.body.style.overflow = "";
       return;
     }
+    content.nav.forEach((item) => router.prefetch(item.href));
     document.documentElement.style.overflow = "hidden";
     document.body.style.overflow = "hidden";
     const firstLink = overlayRef.current?.querySelector<HTMLElement>("a, button");

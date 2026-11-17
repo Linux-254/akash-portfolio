@@ -48,11 +48,12 @@ export function SmoothScroll() {
   }, [engineRef]);
 
   useEffect(() => {
+    engineRef.current?.setScrollProgress(0);
     const id = requestAnimationFrame(() => {
       ScrollTrigger.refresh();
     });
     return () => cancelAnimationFrame(id);
-  }, [pathname]);
+  }, [pathname, engineRef]);
 
   return null;
 }

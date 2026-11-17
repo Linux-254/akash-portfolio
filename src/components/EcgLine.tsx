@@ -3,40 +3,39 @@
 import { useEffect, useRef } from "react";
 import { useApp } from "./AppContext";
 
-// Smooth flowing Bezier calligraphic oscillograph tracing "akash" across screen center
-const HERO_CURSIVE_AKASH_PATH =
-  "M 0 54 " +
-  "C 120 54, 210 54, 290 54 " +
-  "C 312 54, 326 40, 336 30 C 344 22, 352 54, 366 54 " +
-  "C 386 54, 396 24, 412 24 C 424 24, 424 52, 412 54 C 402 55, 398 36, 420 50 " +
-  "C 434 60, 444 12, 444 12 C 444 12, 444 54, 444 54 C 444 42, 464 22, 474 28 C 464 38, 456 42, 478 54 " +
-  "C 496 60, 506 24, 522 24 C 534 24, 534 52, 522 54 C 512 55, 508 36, 530 50 " +
-  "C 548 60, 558 22, 574 24 C 586 26, 566 38, 580 44 C 594 50, 582 62, 566 54 " +
-  "C 596 54, 608 12, 608 12 C 608 12, 608 54, 608 54 C 610 34, 634 24, 636 54 " +
-  "C 648 54, 668 44, 682 54 C 694 62, 706 18, 718 54 C 726 74, 738 44, 750 54 " +
-  "C 860 54, 1020 54, 1200 54";
+// Realistic multi-complex P-QRS-T clinical ECG waveform with an integrated
+// cursive "Akash" signature flourish across the central beat (viewBox 0..1200 x 0..132, baseline y=62).
+const MONITOR_ECG_PATH =
+  "M 0 62 " +
+  // Baseline lead-in -> Beat 1 (left telemetry complex)
+  "L 72 62 " +
+  "C 82 62, 88 53, 96 53 C 104 53, 109 62, 118 62 " + // P wave
+  "L 128 62 L 134 70 L 143 16 L 152 82 L 160 62 " + // QRS complex
+  "L 174 62 C 188 62, 196 47, 212 47 C 228 47, 238 62, 252 62 " + // T wave
+  // Isoelectric -> Beat 2
+  "L 304 62 " +
+  "C 314 62, 320 53, 328 53 C 336 53, 341 62, 350 62 " + // P wave
+  "L 360 62 L 366 70 L 375 18 L 384 80 L 392 62 " + // QRS complex
+  "L 406 62 C 420 62, 428 48, 444 48 C 460 48, 470 62, 484 62 " + // T wave
+  // Central Signature Complex framing "Akash"
+  "L 516 62 " +
+  "C 526 62, 534 52, 544 52 C 554 52, 560 62, 568 62 " + // P wave
+  "L 578 62 L 585 74 L 598 10 L 610 86 L 620 62 " + // Prominent central R-spike
+  "L 634 62 C 650 62, 660 44, 678 44 C 696 44, 706 62, 722 62 " + // Tall T wave
+  // Isoelectric -> Beat 4
+  "L 788 62 " +
+  "C 798 62, 804 53, 812 53 C 820 53, 825 62, 834 62 " + // P wave
+  "L 844 62 L 850 70 L 859 17 L 868 81 L 876 62 " + // QRS complex
+  "L 890 62 C 904 62, 912 48, 928 48 C 944 48, 954 62, 968 62 " + // T wave
+  // Beat 5 (right exit complex)
+  "L 1020 62 " +
+  "C 1030 62, 1036 53, 1044 53 C 1052 53, 1057 62, 1066 62 " + // P wave
+  "L 1076 62 L 1082 70 L 1091 18 L 1100 80 L 1108 62 " + // QRS complex
+  "L 1122 62 C 1136 62, 1144 49, 1158 49 C 1172 49, 1180 62, 1192 62 " + // T wave
+  "L 1200 62";
 
-function buildSmoothPulsePath(scrollProgress: number, ampScale: number): string {
-  const amp = Math.min(22, 8 + ampScale * 14);
-  let d = "M 0 54";
-  const cycles = 7;
-  const span = 1200 / cycles;
-  const phase = (scrollProgress * 2.8) % 1;
-  for (let i = 0; i < cycles; i++) {
-    const x = i * span + phase * 36 - 18;
-    const pY = 54 - amp * 0.24;
-    const qY = 54 + amp * 0.34;
-    const rY = 54 - amp;
-    const sY = 54 + amp * 0.48;
-    const tY = 54 - amp * 0.28;
-    d += ` C ${(x + span * 0.1).toFixed(1)} 54, ${(x + span * 0.18).toFixed(1)} 54, ${(x + span * 0.24).toFixed(1)} 54`;
-    d += ` C ${(x + span * 0.28).toFixed(1)} ${pY.toFixed(1)}, ${(x + span * 0.32).toFixed(1)} ${pY.toFixed(1)}, ${(x + span * 0.36).toFixed(1)} 54`;
-    d += ` C ${(x + span * 0.39).toFixed(1)} ${qY.toFixed(1)}, ${(x + span * 0.43).toFixed(1)} ${rY.toFixed(1)}, ${(x + span * 0.46).toFixed(1)} ${rY.toFixed(1)}`;
-    d += ` C ${(x + span * 0.49).toFixed(1)} ${rY.toFixed(1)}, ${(x + span * 0.52).toFixed(1)} ${sY.toFixed(1)}, ${(x + span * 0.56).toFixed(1)} 54`;
-    d += ` C ${(x + span * 0.64).toFixed(1)} ${tY.toFixed(1)}, ${(x + span * 0.74).toFixed(1)} ${tY.toFixed(1)}, ${(x + span * 0.84).toFixed(1)} 54`;
-  }
-  return d + " C 1160 54, 1185 54, 1200 54";
-}
+// X positions of the 5 R-wave spikes in viewBox space
+const R_SPIKES = [143, 375, 598, 859, 1091];
 
 function playEcgTick() {
   try {
@@ -49,7 +48,7 @@ function playEcgTick() {
     const gain = ctx.createGain();
     osc.type = "sine";
     osc.frequency.setValueAtTime(980, ctx.currentTime);
-    gain.gain.setValueAtTime(0.015, ctx.currentTime);
+    gain.gain.setValueAtTime(0.014, ctx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.0004, ctx.currentTime + 0.05);
     osc.connect(gain);
     gain.connect(ctx.destination);
@@ -62,7 +61,13 @@ function playEcgTick() {
 
 export function EcgLine() {
   const { soundMuted, ecgBootProgress, ecgBootDone } = useApp();
-  const pathRef = useRef<SVGPathElement | null>(null);
+  const activePathRef = useRef<SVGPathElement | null>(null);
+  const headDotRef = useRef<SVGCircleElement | null>(null);
+  const headHaloRef = useRef<SVGCircleElement | null>(null);
+  const leadGradRef = useRef<SVGLinearGradientElement | null>(null);
+  const wrapGradRef = useRef<SVGLinearGradientElement | null>(null);
+  const maskLeadRef = useRef<SVGRectElement | null>(null);
+  const maskWrapRef = useRef<SVGRectElement | null>(null);
   const labelRef = useRef<SVGTextElement | null>(null);
   const bootProgressRef = useRef(ecgBootProgress);
   const bootDoneRef = useRef(ecgBootDone);
@@ -78,100 +83,248 @@ export function EcgLine() {
   }, [soundMuted]);
 
   useEffect(() => {
+    const pathEl = activePathRef.current;
+    if (!pathEl) return;
+
     const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    if (reduced) return;
+    if (reduced) {
+      if (maskLeadRef.current) {
+        maskLeadRef.current.setAttribute("x", "0");
+        maskLeadRef.current.setAttribute("width", "1200");
+        maskLeadRef.current.setAttribute("fill", "#ffffff");
+      }
+      if (labelRef.current) labelRef.current.style.opacity = "0.7";
+      return;
+    }
+
+    // Pre-sample the ECG path into a monotonic x-indexed Y lookup table once on mount
+    // so per-frame sweep cursor tracking does ZERO SVG DOM geometry queries.
+    const totalLen = pathEl.getTotalLength();
+    const LUT_SIZE = 600;
+    const yLut = new Float32Array(LUT_SIZE + 1).fill(62);
+    for (let i = 0; i <= 1400; i++) {
+      const pt = pathEl.getPointAtLength((i / 1400) * totalLen);
+      const bucket = Math.min(LUT_SIZE, Math.max(0, Math.round((pt.x / 1200) * LUT_SIZE)));
+      yLut[bucket] = pt.y;
+    }
+
+    const sampleY = (x: number): number => {
+      const clamped = ((x % 1200) + 1200) % 1200;
+      const exact = (clamped / 1200) * LUT_SIZE;
+      const lo = Math.floor(exact);
+      const hi = Math.min(LUT_SIZE, lo + 1);
+      const frac = exact - lo;
+      return yLut[lo] * (1 - frac) + yLut[hi] * frac;
+    };
 
     let lastY = window.scrollY;
     let lastTime = performance.now();
-    let smoothedVel = 0;
-    let lastTickMs = 0;
+    let scrollBoost = 0;
+    let lastSpikeIdx = -1;
+    let spikeFlash = 0;
+    let sweepPx = 0;
     let rafId = 0;
 
-    const update = () => {
-      const now = performance.now();
-      const dt = Math.max((now - lastTime) / 1000, 0.016);
-      const y = window.scrollY;
-      const vel = Math.abs(y - lastY) / dt;
-      smoothedVel += (vel - smoothedVel) * 0.24;
-      lastY = y;
+    // 4.4s full monitor sweep across 5 cardiac beats (~68-72 BPM steady sinus rhythm)
+    const SWEEP_SPEED = 1200 / 4.4;
+    const TRAIL_WIDTH = 660;
+
+    const tick = (now: number) => {
+      const dt = Math.min(Math.max((now - lastTime) / 1000, 0.001), 0.05);
       lastTime = now;
 
-      const maxScroll = Math.max(
-        document.documentElement.scrollHeight - window.innerHeight,
-        1,
-      );
-      const p = Math.min(Math.max(y / maxScroll, 0), 1);
-      const inHero = p < 0.16;
+      const curScroll = window.scrollY;
+      const instantVel = Math.abs(curScroll - lastY) / dt;
+      lastY = curScroll;
+      scrollBoost += (Math.min(instantVel / 1800, 0.35) - scrollBoost) * (1 - Math.exp(-4 * dt));
 
-      if (pathRef.current) {
-        if (inHero) {
-          pathRef.current.setAttribute("d", HERO_CURSIVE_AKASH_PATH);
-          const len = pathRef.current.getTotalLength();
-          const bootSweep = bootDoneRef.current ? 1 : bootProgressRef.current;
-          const scrollSweep = Math.min(0.45 + (p / 0.16) * 0.55, 1);
-          const drawP = Math.min(bootSweep * scrollSweep + (bootDoneRef.current ? 0.55 : 0), 1);
-          pathRef.current.style.strokeDasharray = `${len}`;
-          pathRef.current.style.strokeDashoffset = `${len * (1 - drawP)}`;
+      const speedMul = 1 + scrollBoost;
+      sweepPx = (sweepPx + SWEEP_SPEED * speedMul * dt) % 1200;
+
+      // Detect crossing an R-wave peak to trigger clinical monitor systole pulse
+      let activeSpike = -1;
+      for (let i = 0; i < R_SPIKES.length; i++) {
+        if (Math.abs(sweepPx - R_SPIKES[i]) < 14) {
+          activeSpike = i;
+          break;
+        }
+      }
+      if (activeSpike !== -1 && activeSpike !== lastSpikeIdx) {
+        lastSpikeIdx = activeSpike;
+        spikeFlash = 1;
+        if (!soundMutedRef.current && scrollBoost > 0.04) {
+          playEcgTick();
+        }
+      } else if (activeSpike === -1) {
+        lastSpikeIdx = -1;
+      }
+      spikeFlash *= Math.exp(-5.4 * dt);
+
+      const tailStart = sweepPx - TRAIL_WIDTH;
+
+      if (maskLeadRef.current && maskWrapRef.current && leadGradRef.current && wrapGradRef.current) {
+        leadGradRef.current.setAttribute("x1", tailStart.toFixed(1));
+        leadGradRef.current.setAttribute("x2", sweepPx.toFixed(1));
+
+        if (tailStart >= 0) {
+          maskLeadRef.current.setAttribute("x", tailStart.toFixed(1));
+          maskLeadRef.current.setAttribute("width", TRAIL_WIDTH.toFixed(1));
+          maskWrapRef.current.setAttribute("width", "0");
         } else {
-          const d = buildSmoothPulsePath(p, Math.min(smoothedVel / 1100, 1));
-          pathRef.current.setAttribute("d", d);
-          const len = pathRef.current.getTotalLength();
-          const sweep = 0.25 + p * 0.75;
-          pathRef.current.style.strokeDasharray = `${len}`;
-          pathRef.current.style.strokeDashoffset = `${len * (1 - sweep)}`;
+          // Seamless wrap across the 1200 -> 0 seam using matching userSpaceOnUse coordinates
+          maskLeadRef.current.setAttribute("x", "0");
+          maskLeadRef.current.setAttribute("width", sweepPx.toFixed(1));
+          const wrapWidth = -tailStart;
+          const wrapX = 1200 - wrapWidth;
+          wrapGradRef.current.setAttribute("x1", wrapX.toFixed(1));
+          wrapGradRef.current.setAttribute("x2", (1200 + sweepPx).toFixed(1));
+          maskWrapRef.current.setAttribute("x", wrapX.toFixed(1));
+          maskWrapRef.current.setAttribute("width", wrapWidth.toFixed(1));
         }
       }
 
+      const curY = sampleY(sweepPx);
+      const bootVis = bootDoneRef.current ? 1 : Math.min(1, bootProgressRef.current + 0.35);
+
+      if (headDotRef.current && headHaloRef.current) {
+        headDotRef.current.setAttribute("cx", sweepPx.toFixed(1));
+        headDotRef.current.setAttribute("cy", curY.toFixed(1));
+        headDotRef.current.setAttribute("r", (3.1 + spikeFlash * 1.9).toFixed(2));
+        headDotRef.current.style.opacity = `${(0.95 * bootVis).toFixed(3)}`;
+
+        headHaloRef.current.setAttribute("cx", sweepPx.toFixed(1));
+        headHaloRef.current.setAttribute("cy", curY.toFixed(1));
+        headHaloRef.current.setAttribute("r", (8.5 + spikeFlash * 9.5).toFixed(2));
+        headHaloRef.current.style.opacity = `${((0.35 + spikeFlash * 0.45) * bootVis).toFixed(3)}`;
+      }
+
+      // Continuous lub-dub physiological pulse on the "Akash" monitor signature synced with systole
       if (labelRef.current) {
-        const bootVis = bootDoneRef.current ? 1 : bootProgressRef.current;
-        labelRef.current.style.opacity = inHero
-          ? `${(0.76 * bootVis).toFixed(3)}`
-          : "0.42";
+        const beatPhase = (now * 0.00118) % 1;
+        const lub = Math.exp(-Math.pow((beatPhase - 0.12) * 16, 2));
+        const dub = Math.exp(-Math.pow((beatPhase - 0.28) * 16, 2)) * 0.65;
+        const sysWave = Math.min(1, lub + dub + spikeFlash * 0.55);
+
+        const labelAlpha = (0.44 + sysWave * 0.48) * bootVis;
+        const labelScale = 1 + sysWave * 0.045;
+        labelRef.current.style.opacity = labelAlpha.toFixed(3);
+        labelRef.current.style.transform = `scale(${labelScale.toFixed(4)})`;
       }
 
-      if (!soundMutedRef.current && smoothedVel > 220 && now - lastTickMs > 420) {
-        lastTickMs = now;
-        playEcgTick();
-      }
+      rafId = requestAnimationFrame(tick);
     };
 
-    const onScroll = () => {
-      cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(update);
-    };
-
-    update();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => {
-      cancelAnimationFrame(rafId);
-      window.removeEventListener("scroll", onScroll);
-    };
-  }, [ecgBootProgress, ecgBootDone]);
+    rafId = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
 
   return (
     <div className="ecg-center-watermark" aria-hidden="true">
-      <svg viewBox="0 0 1200 124" preserveAspectRatio="none" className="ecg-svg">
+      <svg viewBox="0 0 1200 132" preserveAspectRatio="none" className="ecg-svg">
         <defs>
-          <linearGradient id="ecg-grad" x1="0%" y1="0%" x2="100%" y2="0%">
-            <stop offset="0%" stopColor="var(--c-bold)" stopOpacity="0.18" />
-            <stop offset="28%" stopColor="var(--c-bold)" stopOpacity="0.88" />
-            <stop offset="72%" stopColor="var(--c-bold)" stopOpacity="0.92" />
-            <stop offset="100%" stopColor="var(--c-bold)" stopOpacity="0.18" />
+          <linearGradient
+            ref={leadGradRef}
+            id="ecg-lead-grad"
+            gradientUnits="userSpaceOnUse"
+            x1="-660"
+            y1="0"
+            x2="0"
+            y2="0"
+          >
+            <stop offset="0%" stopColor="#000000" stopOpacity="0" />
+            <stop offset="28%" stopColor="#ffffff" stopOpacity="0.22" />
+            <stop offset="76%" stopColor="#ffffff" stopOpacity="0.82" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="1" />
           </linearGradient>
+
+          <linearGradient
+            ref={wrapGradRef}
+            id="ecg-wrap-grad"
+            gradientUnits="userSpaceOnUse"
+            x1="540"
+            y1="0"
+            x2="1200"
+            y2="0"
+          >
+            <stop offset="0%" stopColor="#000000" stopOpacity="0" />
+            <stop offset="28%" stopColor="#ffffff" stopOpacity="0.22" />
+            <stop offset="76%" stopColor="#ffffff" stopOpacity="0.82" />
+            <stop offset="100%" stopColor="#ffffff" stopOpacity="1" />
+          </linearGradient>
+
+          <mask id="ecg-sweep-mask">
+            <rect x="0" y="0" width="1200" height="132" fill="#000000" />
+            <rect
+              ref={maskWrapRef}
+              x="0"
+              y="0"
+              width="0"
+              height="132"
+              fill="url(#ecg-wrap-grad)"
+            />
+            <rect
+              ref={maskLeadRef}
+              x="0"
+              y="0"
+              width="660"
+              height="132"
+              fill="url(#ecg-lead-grad)"
+            />
+          </mask>
+
+          <radialGradient id="ecg-phosphor-halo" cx="50%" cy="50%" r="50%">
+            <stop offset="0%" stopColor="var(--c-bold)" stopOpacity="0.95" />
+            <stop offset="55%" stopColor="var(--c-bold)" stopOpacity="0.32" />
+            <stop offset="100%" stopColor="var(--c-bold)" stopOpacity="0" />
+          </radialGradient>
         </defs>
+
+        {/* Subtle dim phosphor persistence trace */}
         <path
-          ref={pathRef}
-          d={HERO_CURSIVE_AKASH_PATH}
+          d={MONITOR_ECG_PATH}
           fill="none"
-          stroke="url(#ecg-grad)"
-          strokeWidth="2.1"
+          stroke="var(--c-bold)"
+          strokeWidth="1.5"
           strokeLinecap="round"
           strokeLinejoin="round"
+          opacity="0.16"
         />
+
+        {/* Active sweeping monitor trace */}
+        <path
+          ref={activePathRef}
+          d={MONITOR_ECG_PATH}
+          fill="none"
+          stroke="var(--c-bold)"
+          strokeWidth="2.35"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          mask="url(#ecg-sweep-mask)"
+        />
+
+        {/* Sweeping phosphor beam halo + dot */}
+        <circle
+          ref={headHaloRef}
+          cx="0"
+          cy="62"
+          r="9"
+          fill="url(#ecg-phosphor-halo)"
+        />
+        <circle
+          ref={headDotRef}
+          cx="0"
+          cy="62"
+          r="3.2"
+          fill="var(--c-neutral-light)"
+          stroke="var(--c-bold)"
+          strokeWidth="1.75"
+        />
+
+        {/* Centered "Akash" telemetry signature pulsing cleanly on each heartbeat */}
         <text
           ref={labelRef}
           x="600"
-          y="108"
+          y="116"
           textAnchor="middle"
           className="ecg-watermark-word"
           fill="var(--c-bold)"

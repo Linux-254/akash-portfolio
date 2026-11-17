@@ -15,7 +15,9 @@ void main() {
   gl_Position = vec4(position.xy, 0.0, 1.0);
 }`;
 
-// Volumetric FBM liquid fog & smoke wave shader (subtle & translucent)
+// Silky GPU-accelerated atmospheric fog & liquid wave shader.
+// Aligns with the site's emerald/pine/mist palette, keeps wispy translucent edges,
+// and reaches rich coverage at peak so route swaps underneath are completely seamless.
 const FRAGMENT = `
 precision highp float;
 varying vec2 vUv;
@@ -47,7 +49,7 @@ float fbm(vec2 p) {
   float v = 0.0;
   float a = 0.5;
   mat2 rot = mat2(0.8, 0.6, -0.6, 0.8);
-  for (int i = 0; i < 5; i++) {
+  for (int i = 0; i < 4; i++) {
     v += a * noise(p);
     p = rot * p * 2.02;
     a *= 0.5;
@@ -69,61 +71,64 @@ void main() {
   float maxD = max(max(d1, d2), max(d3, d4));
   maxD = max(maxD, 1.7);
 
-  // Atmospheric rolling fog domain warping
-  vec2 p = uv * 1.8;
+  vec2 p = uv * 1.75;
   vec2 q = vec2(
-    fbm(p + vec2(uTime * 0.14, -uTime * 0.12)),
-    fbm(p + vec2(5.2, 1.3) + vec2(-uTime * 0.11, uTime * 0.15))
+    fbm(p + vec2(uTime * 0.18, -uTime * 0.14)),
+    fbm(p + vec2(5.2, 1.3) + vec2(-uTime * 0.13, uTime * 0.17))
   );
   vec2 r = vec2(
-    fbm(p + 2.6 * q + vec2(1.7, 9.2) + uTime * 0.1),
-    fbm(p + 2.6 * q + vec2(8.3, 2.8) - uTime * 0.09)
+    fbm(p + 2.2 * q + vec2(1.7, 9.2) + uTime * 0.12),
+    fbm(p + 2.2 * q + vec2(8.3, 2.8) - uTime * 0.1)
   );
-  float fog = fbm(p + 2.8 * r + vec2(uTime * 0.06, -uTime * 0.08));
+  float fog = fbm(p + 2.4 * r + vec2(uTime * 0.08, -uTime * 0.09));
 
   float dist = length(uv - origin);
-  float waveRipple = sin(dist * 9.0 - uTime * 2.4 - uProgress * 10.0) * 0.08;
+  float waveRipple = sin(dist * 7.5 - uTime * 2.6 - uProgress * 8.0) * 0.065;
   vec2 driftDir = normalize(vec2(0.5 * aspect, 0.5) - origin + vec2(0.001, 0.001));
   float driftProj = dot(uv - origin, driftDir);
 
-  float currentRadius;
   float edgeDist;
   float solidPool;
   float softEdge;
 
   if (uMode < 0.5) {
-    currentRadius = uProgress * (maxD * 1.35 + 0.5);
-    float waveFront = dist + driftProj * 0.14 - (fog * 0.52 + waveRipple + length(r) * 0.24);
+    // Phase 1: Fog wave spreads cleanly across the entire screen
+    float currentRadius = uProgress * (maxD * 1.48 + 0.72);
+    float waveFront = dist + driftProj * 0.12 - (fog * 0.46 + waveRipple + length(r) * 0.18);
     edgeDist = waveFront - currentRadius;
-    solidPool = smoothstep(0.08, -0.05, edgeDist);
-    softEdge = smoothstep(0.42, -0.1, edgeDist);
-    if (uProgress >= 0.96) {
-      solidPool = 1.0;
-      softEdge = 1.0;
-    }
+    solidPool = 1.0 - smoothstep(-0.18, 0.04, edgeDist);
+    softEdge = 1.0 - smoothstep(-0.16, 0.46, edgeDist);
+    float peakSeal = smoothstep(0.90, 1.0, uProgress);
+    solidPool = max(solidPool, peakSeal);
+    softEdge = max(softEdge, peakSeal);
   } else {
-    float drainRadius = (1.0 - uProgress) * (maxD * 1.38 + 0.55);
-    float waveFront = dist + driftProj * 0.14 - (fog * 0.52 + waveRipple + length(r) * 0.24);
-    edgeDist = waveFront - drainRadius;
-    solidPool = smoothstep(-0.05, 0.08, edgeDist);
-    softEdge = smoothstep(-0.1, 0.42, edgeDist);
+    // Phase 2: Fog wave parts & dissipates smoothly to reveal the already-rendered new page
+    float waveVal = vUv.y * 0.62 + (dist / maxD) * 0.34 + (fog * 0.46 + waveRipple + length(r) * 0.16);
+    float clearThresh = mix(-0.35, 1.95, uProgress);
+    edgeDist = waveVal - clearThresh;
+    solidPool = 1.0 - smoothstep(-0.24, 0.06, edgeDist);
+    softEdge = 1.0 - smoothstep(-0.26, 0.54, edgeDist);
+    float tailFade = smoothstep(0.0, 0.28, uProgress);
+    solidPool *= tailFade;
+    softEdge *= tailFade;
   }
 
-  float alpha = mix(softEdge * 0.7, 0.88, solidPool);
-  if (alpha <= 0.01) discard;
+  float alpha = mix(softEdge * 0.64, 0.97, solidPool);
+  if (alpha <= 0.005) discard;
 
-  vec3 deepInk = mix(uColor, uDark, 0.45);
-  vec3 fluidBody = uColor;
-  vec3 mistFoam = mix(uColor, uLight, 0.65);
-  vec3 smokeGlow = mix(uLight, vec3(1.0), 0.4);
+  // Color palette matching the editorial light/emerald/dark gradient
+  vec3 deepPine = mix(uColor, uDark, 0.42);
+  vec3 emeraldMist = uColor;
+  vec3 softSage = mix(uColor, uLight, 0.52);
+  vec3 haloMist = mix(uLight, uColor, 0.32);
 
-  vec3 col = mix(deepInk, fluidBody, smoothstep(0.2, 0.75, fog));
-  col = mix(col, mistFoam, smoothstep(0.6, 0.92, waveRipple + fog * 0.45));
+  vec3 col = mix(deepPine, emeraldMist, smoothstep(0.18, 0.72, fog));
+  col = mix(col, softSage, smoothstep(0.55, 0.92, fog * 0.65 + length(r) * 0.35));
 
-  float rim = smoothstep(0.25, 0.0, abs(edgeDist)) * 0.55;
-  col = mix(col, smokeGlow, rim);
+  float rim = (1.0 - smoothstep(0.0, 0.32, abs(edgeDist))) * 0.48;
+  col = mix(col, haloMist, rim);
 
-  gl_FragColor = vec4(col, alpha * 0.76);
+  gl_FragColor = vec4(col, alpha);
   #include <colorspace_fragment>
 }`;
 
@@ -134,99 +139,8 @@ function isMobileViewport(): boolean {
   );
 }
 
-// Generate organic rolling fog plumes that billow outwards continuously without sudden pops
-function generateFogSpillPath(
-  ox: number,
-  oy: number,
-  radius: number,
-  wavePhase: number,
-  scaleMod = 1,
-): string {
-  if (radius <= 2) return "";
-  const N = 40;
-  const points: { x: number; y: number }[] = [];
-  const r = radius * scaleMod;
-
-  for (let i = 0; i < N; i++) {
-    const angle = (i / N) * 2 * Math.PI;
-    const plume =
-      Math.sin(angle * 3 + wavePhase) * 0.2
-      + Math.cos(angle * 2 - wavePhase * 1.1) * 0.16
-      + Math.sin(angle * 5 + wavePhase * 1.6) * 0.1;
-    const curR = r * (1 + plume);
-    points.push({
-      x: ox + curR * Math.cos(angle),
-      y: oy + curR * Math.sin(angle),
-    });
-  }
-
-  let d = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
-  for (let i = 0; i < N; i++) {
-    const curr = points[i];
-    const next = points[(i + 1) % N];
-    const midX = (curr.x + next.x) / 2;
-    const midY = (curr.y + next.y) / 2;
-    d += ` Q ${curr.x.toFixed(1)} ${curr.y.toFixed(1)} ${midX.toFixed(1)} ${midY.toFixed(1)}`;
-  }
-  d += " Z";
-  return d;
-}
-
-// Generate sweeping fog drain path that rolls across and dissipates smoothly
-function generateFogDrainPath(
-  W: number,
-  H: number,
-  drainY: number,
-  wavePhase: number,
-  offsetY = 0,
-): string {
-  const y = drainY + offsetY;
-  if (y >= H + 200) return "";
-  const M = 24;
-  let d = `M 0 ${H} L 0 ${Math.max(0, y).toFixed(1)}`;
-
-  for (let j = 0; j <= M; j++) {
-    const x = (j / M) * W;
-    const wave =
-      Math.sin((j / M) * 3 * Math.PI + wavePhase) * 32
-      + Math.cos((j / M) * 5 * Math.PI - wavePhase * 1.2) * 18;
-    const ptY = Math.max(0, y + wave);
-    d += ` L ${x.toFixed(1)} ${ptY.toFixed(1)}`;
-  }
-
-  d += ` L ${W} ${H} Z`;
-  return d;
-}
-
-function generateFogFoamPath(
-  W: number,
-  drainY: number,
-  wavePhase: number,
-  offsetY = 0,
-): string {
-  const y = drainY + offsetY;
-  const M = 24;
-  let d = `M 0 ${(y + Math.cos(wavePhase) * 16).toFixed(1)}`;
-
-  for (let j = 0; j <= M; j++) {
-    const x = (j / M) * W;
-    const wave =
-      Math.sin((j / M) * 3 * Math.PI + wavePhase) * 32
-      + Math.cos((j / M) * 5 * Math.PI - wavePhase * 1.2) * 18;
-    const ptY = Math.max(0, y + wave);
-    d += ` L ${x.toFixed(1)} ${ptY.toFixed(1)}`;
-  }
-  return d;
-}
-
 export function PaintTransition() {
   const hostRef = useRef<HTMLDivElement | null>(null);
-  const stageRef = useRef<HTMLDivElement | null>(null);
-  const pathBaseRef = useRef<SVGPathElement | null>(null);
-  const pathMidRef = useRef<SVGPathElement | null>(null);
-  const pathFoamRef = useRef<SVGPathElement | null>(null);
-  const [stageActive, setStageActive] = useState(false);
-
   const {
     registerTransition,
     registerWaterEffect,
@@ -238,10 +152,33 @@ export function PaintTransition() {
   const router = useRouter();
   const pathname = usePathname();
   const pathnameRef = useRef(pathname);
+  const routeCommitResolverRef = useRef<{
+    targetHref: string;
+    resolve: () => void;
+  } | null>(null);
+  const [fallbackMode, setFallbackMode] = useState<"idle" | "in" | "out">("idle");
 
+  // Detect the exact moment Next.js commits the new route to the DOM,
+  // wait two animation frames so the new page is painted, then release Phase 2!
   useEffect(() => {
     pathnameRef.current = pathname;
     engineRef.current?.setRoute(pathname);
+
+    const pending = routeCommitResolverRef.current;
+    if (pending && pathname === pending.targetHref) {
+      routeCommitResolverRef.current = null;
+      let raf2 = 0;
+      const raf1 = requestAnimationFrame(() => {
+        raf2 = requestAnimationFrame(() => {
+          ScrollTrigger.refresh();
+          pending.resolve();
+        });
+      });
+      return () => {
+        cancelAnimationFrame(raf1);
+        cancelAnimationFrame(raf2);
+      };
+    }
   }, [pathname, engineRef]);
 
   useEffect(() => {
@@ -255,126 +192,101 @@ export function PaintTransition() {
     let active = false;
     let safetyTimer = 0;
 
-    const executeCycle = (
+    const finishCycle = () => {
+      clearTimeout(safetyTimer);
+      routeCommitResolverRef.current = null;
+      active = false;
+      cancelAnimationFrame(rafId);
+      renderer?.clear();
+      setIsTransitioning(false);
+    };
+
+    const waitForRouteIfNeeded = (targetHref?: string): Promise<void> => {
+      if (!targetHref || pathnameRef.current === targetHref) {
+        return new Promise((resolve) => {
+          requestAnimationFrame(() => requestAnimationFrame(() => resolve()));
+        });
+      }
+      return new Promise((resolve) => {
+        const timeoutId = window.setTimeout(() => {
+          if (routeCommitResolverRef.current?.targetHref === targetHref) {
+            routeCommitResolverRef.current = null;
+          }
+          resolve();
+        }, 2200);
+
+        routeCommitResolverRef.current = {
+          targetHref,
+          resolve: () => {
+            clearTimeout(timeoutId);
+            resolve();
+          },
+        };
+      });
+    };
+
+    const executeWebGLCycle = (
       origin: OriginPoint | undefined,
       onPeak: () => void,
-      customCover?: number,
-      customDrain?: number,
+      options?: { coverDur?: number; drainDur?: number; waitForHref?: string },
     ) => {
-      const mobile = isMobileViewport();
-      // Moderate speed: smooth, graceful fog spreading across the viewport
-      const coverDur = customCover ?? (mobile ? 0.78 : 0.88);
-      const drainDur = customDrain ?? (mobile ? 0.74 : 0.84);
-
-      const W = window.innerWidth;
-      const H = window.innerHeight;
-      const ox = (origin?.x ?? 0.85) * W;
-      const oy = (1 - (origin?.y ?? 0.85)) * H;
-      const maxDist = Math.hypot(Math.max(ox, W - ox), Math.max(oy, H - oy));
-
-      setIsTransitioning(true);
-      setStageActive(true);
-      active = true;
-
-      clearTimeout(safetyTimer);
-      safetyTimer = window.setTimeout(() => {
-        active = false;
-        cancelAnimationFrame(rafId);
-        setIsTransitioning(false);
-        setStageActive(false);
-      }, 3500);
-
-      if (mat) {
-        mat.uniforms.uMode.value = 0;
-        mat.uniforms.uProgress.value = 0;
-        mat.uniforms.uOrigin.value.set(
-          origin?.x ?? 0.85,
-          origin?.y ?? 0.85,
-        );
+      if (!renderer || !mat || !sceneRef || !camRef) {
+        onPeak();
+        return;
       }
 
+      const mobile = isMobileViewport();
+      const coverDur = options?.coverDur ?? (mobile ? 0.56 : 0.66);
+      const drainDur = options?.drainDur ?? (mobile ? 0.62 : 0.74);
+
+      setIsTransitioning(true);
+      active = true;
+      clearTimeout(safetyTimer);
+      safetyTimer = window.setTimeout(finishCycle, 4200);
+
+      const anim = { p: 0 };
+      gsap.killTweensOf(anim);
+      cancelAnimationFrame(rafId);
+
+      mat.uniforms.uMode.value = 0;
+      mat.uniforms.uProgress.value = 0;
+      mat.uniforms.uOrigin.value.set(origin?.x ?? 0.85, origin?.y ?? 0.85);
+
       const loop = (now: number) => {
-        if (!active) return;
-        if (renderer && mat && sceneRef && camRef) {
-          mat.uniforms.uTime.value = now * 0.001;
-          renderer.render(sceneRef, camRef);
-        }
+        if (!active || !renderer || !mat || !sceneRef || !camRef) return;
+        mat.uniforms.uTime.value = now * 0.001;
+        renderer.render(sceneRef, camRef);
         rafId = requestAnimationFrame(loop);
       };
       rafId = requestAnimationFrame(loop);
 
-      const anim = { p: 0, wave: 0 };
-      gsap.killTweensOf(anim);
-
-      // Phase 1: Subtle fog expansion spreading smoothly from origin
+      // Phase 1: Fog rolls out organically to veil the current view
       gsap.to(anim, {
         p: 1,
-        wave: Math.PI * 3.5,
         duration: coverDur,
         ease: "power2.inOut",
         onUpdate: () => {
-          if (mat) {
-            mat.uniforms.uProgress.value = anim.p;
-            mat.uniforms.uMode.value = 0;
-          }
-          // Smooth continuous expansion past screen boundaries — zero abrupt rectangular snap
-          const r = anim.p * maxDist * 1.55;
-          pathBaseRef.current?.setAttribute(
-            "d",
-            generateFogSpillPath(ox, oy, r, anim.wave, 1.0),
-          );
-          pathMidRef.current?.setAttribute(
-            "d",
-            generateFogSpillPath(ox, oy, r, anim.wave, 0.93),
-          );
-          pathFoamRef.current?.setAttribute(
-            "d",
-            generateFogSpillPath(ox, oy, r, anim.wave, 0.97),
-          );
+          if (mat) mat.uniforms.uProgress.value = anim.p;
         },
-        onComplete: () => {
+        onComplete: async () => {
           onPeak();
+          // Crucial: Hold cover until the target route has ACTUALLY committed & painted underneath!
+          await waitForRouteIfNeeded(options?.waitForHref);
+          if (!active || !mat) return;
 
-          // Phase 2: Fog Dissipation & Drain — rolls down smoothly like dissipating mist
-          if (mat) {
-            mat.uniforms.uMode.value = 1;
-          }
+          mat.uniforms.uMode.value = 1;
+          mat.uniforms.uProgress.value = 1;
+          anim.p = 1;
 
+          // Phase 2: Fog dissipates smoothly, immediately revealing the already-rendered new page
           gsap.to(anim, {
             p: 0,
-            wave: Math.PI * 7,
             duration: drainDur,
-            delay: 0.05,
-            ease: "power2.inOut",
+            ease: "power2.out",
             onUpdate: () => {
-              if (mat) {
-                mat.uniforms.uProgress.value = anim.p;
-              }
-              const drainY = (1.0 - anim.p) * (H + 200);
-              pathBaseRef.current?.setAttribute(
-                "d",
-                generateFogDrainPath(W, H, drainY, anim.wave, 0),
-              );
-              pathMidRef.current?.setAttribute(
-                "d",
-                generateFogDrainPath(W, H, drainY, anim.wave, 24),
-              );
-              pathFoamRef.current?.setAttribute(
-                "d",
-                generateFogFoamPath(W, drainY, anim.wave, 0),
-              );
+              if (mat) mat.uniforms.uProgress.value = anim.p;
             },
-            onComplete: () => {
-              clearTimeout(safetyTimer);
-              active = false;
-              cancelAnimationFrame(rafId);
-              renderer?.clear();
-              setStageActive(false);
-              setIsTransitioning(false);
-              pathBaseRef.current?.setAttribute("d", "");
-              pathMidRef.current?.setAttribute("d", "");
-              pathFoamRef.current?.setAttribute("d", "");
-            },
+            onComplete: finishCycle,
           });
         },
       });
@@ -385,7 +297,7 @@ export function PaintTransition() {
         renderer = new THREE.WebGLRenderer({ alpha: true, antialias: false });
         renderer.domElement.className = "paint-canvas";
         renderer.domElement.setAttribute("aria-hidden", "true");
-        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
+        renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
         renderer.setClearColor(0x000000, 0);
         renderer.setSize(window.innerWidth, window.innerHeight, false);
         host.appendChild(renderer.domElement);
@@ -430,24 +342,39 @@ export function PaintTransition() {
 
         registerTransition((href, origin) => {
           if (href === pathnameRef.current) {
-            executeCycle(origin, () => setMenuOpen(false), 0.58, 0.58);
+            executeWebGLCycle(origin, () => setMenuOpen(false), {
+              coverDur: 0.44,
+              drainDur: 0.48,
+            });
             return;
           }
-          executeCycle(origin, () => {
-            setMenuOpen(false);
-            ScrollTrigger.getAll().forEach((st) => st.kill());
-            router.push(href);
-            window.scrollTo(0, 0);
-            engineRef.current?.setRoute(href);
-          });
+
+          // Start prefetching immediately at transition start
+          router.prefetch(href);
+
+          executeWebGLCycle(
+            origin,
+            () => {
+              setMenuOpen(false);
+              ScrollTrigger.getAll().forEach((st) => st.kill());
+              window.scrollTo(0, 0);
+              router.push(href);
+              engineRef.current?.setRoute(href);
+            },
+            { waitForHref: href },
+          );
         });
 
         registerWaterEffect((origin, onPeak) => {
-          executeCycle(origin, () => onPeak?.());
+          executeWebGLCycle(origin, () => onPeak?.(), {
+            coverDur: 0.46,
+            drainDur: 0.52,
+          });
         });
 
         return () => {
           clearTimeout(safetyTimer);
+          routeCommitResolverRef.current = null;
           unsub();
           window.removeEventListener("resize", onResize);
           cancelAnimationFrame(rafId);
@@ -461,8 +388,8 @@ export function PaintTransition() {
       }
     }
 
-    // Fallback if reduced motion or WebGL unavailable: still executes smoothly with SVG fog wave
-    registerTransition((href, origin) => {
+    // Reduced motion or WebGL-unavailable fallback with route-commit synchronization
+    registerTransition((href) => {
       if (reduced) {
         setMenuOpen(false);
         ScrollTrigger.getAll().forEach((st) => st.kill());
@@ -471,24 +398,27 @@ export function PaintTransition() {
         return;
       }
       if (href === pathnameRef.current) {
-        executeCycle(origin, () => setMenuOpen(false), 0.58, 0.58);
+        setMenuOpen(false);
         return;
       }
-      executeCycle(origin, () => {
+      setIsTransitioning(true);
+      setFallbackMode("in");
+      router.prefetch(href);
+      window.setTimeout(async () => {
         setMenuOpen(false);
         ScrollTrigger.getAll().forEach((st) => st.kill());
-        router.push(href);
         window.scrollTo(0, 0);
-      });
+        router.push(href);
+        await waitForRouteIfNeeded(href);
+        setFallbackMode("out");
+        window.setTimeout(() => {
+          setFallbackMode("idle");
+          setIsTransitioning(false);
+        }, 380);
+      }, 280);
     });
 
-    registerWaterEffect((origin, onPeak) => {
-      if (reduced) {
-        onPeak?.();
-        return;
-      }
-      executeCycle(origin, () => onPeak?.());
-    });
+    registerWaterEffect((_origin, onPeak) => onPeak?.());
   }, [
     registerTransition,
     registerWaterEffect,
@@ -501,88 +431,10 @@ export function PaintTransition() {
   return (
     <>
       <div ref={hostRef} aria-hidden="true" />
-
-      {/* Subtle, translucent SVG Fog Wave Stage matching brand palette */}
       <div
-        ref={stageRef}
-        className={`liquid-spill-stage ${stageActive ? "is-active" : ""}`}
+        className={`paint-fallback ${fallbackMode === "in" ? "is-active" : fallbackMode === "out" ? "is-draining" : ""}`}
         aria-hidden="true"
-      >
-        <svg
-          className="liquid-spill-svg"
-          viewBox="0 0 100% 100%"
-          preserveAspectRatio="none"
-        >
-          <defs>
-            {/* Base fog gradient: deep clinical pine-teal with soft transparency */}
-            <linearGradient id="fog-gradient-base" x1="0%" y1="0%" x2="100%" y2="100%">
-              <stop offset="0%" stopColor="#0d2822" stopOpacity="0.88" />
-              <stop offset="55%" stopColor="#0b7a68" stopOpacity="0.82" />
-              <stop offset="100%" stopColor="#051c17" stopOpacity="0.90" />
-            </linearGradient>
-
-            {/* Mid fog gradient: vibrant medical emerald mist */}
-            <linearGradient id="fog-gradient-mid" x1="100%" y1="0%" x2="0%" y2="100%">
-              <stop offset="0%" stopColor="#0b7a68" stopOpacity="0.78" />
-              <stop offset="50%" stopColor="#14b8a6" stopOpacity="0.68" />
-              <stop offset="100%" stopColor="#072b24" stopOpacity="0.80" />
-            </linearGradient>
-
-            {/* Mist foam crest gradient: glowing translucent aqua */}
-            <linearGradient id="fog-gradient-mist" x1="0%" y1="50%" x2="100%" y2="50%">
-              <stop offset="0%" stopColor="#5eead4" stopOpacity="0.75" />
-              <stop offset="50%" stopColor="#2dd4bf" stopOpacity="0.85" />
-              <stop offset="100%" stopColor="#5eead4" stopOpacity="0.75" />
-            </linearGradient>
-
-            <filter
-              id="liquid-smoke-disp"
-              x="-30%"
-              y="-30%"
-              width="160%"
-              height="160%"
-            >
-              <feTurbulence
-                type="fractalNoise"
-                baseFrequency="0.01 0.014"
-                numOctaves="3"
-                seed="14"
-                result="fogNoise"
-              />
-              <feDisplacementMap
-                in="SourceGraphic"
-                in2="fogNoise"
-                scale="36"
-                xChannelSelector="R"
-                yChannelSelector="G"
-                result="displaced"
-              />
-              <feGaussianBlur in="displaced" stdDeviation="2.5" />
-            </filter>
-          </defs>
-
-          {/* Deep fluid base layer */}
-          <path
-            ref={pathBaseRef}
-            className="liquid-wave-base"
-            filter="url(#liquid-smoke-disp)"
-          />
-
-          {/* Vibrant medical emerald rolling fog wave */}
-          <path
-            ref={pathMidRef}
-            className="liquid-wave-mid"
-            filter="url(#liquid-smoke-disp)"
-          />
-
-          {/* Shimmering mist and foamy crest line */}
-          <path
-            ref={pathFoamRef}
-            className="liquid-wave-foam"
-            filter="url(#liquid-smoke-disp)"
-          />
-        </svg>
-      </div>
+      />
     </>
   );
 }

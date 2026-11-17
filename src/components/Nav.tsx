@@ -8,11 +8,11 @@ import { TransitionLink } from "./TransitionLink";
 import { NavOverlay } from "./NavOverlay";
 
 const ROUTE_LEADS: Record<string, string> = {
-  "/": "CH-01 // OVERVIEW",
-  "/about": "CH-02 // BIOGRAPHY",
-  "/leadership": "CH-03 // UNSA · AMSUN",
-  "/initiatives": "CH-04 // CBO MENTORSHIP",
-  "/contact": "CH-05 // DISPATCH",
+  "/": "01 · Medicine & Service",
+  "/about": "02 · Northern Kenya to Nairobi",
+  "/leadership": "03 · UNSA & AMSUN Advocacy",
+  "/initiatives": "04 · Community Mentorship",
+  "/contact": "05 · Direct Inquiries",
 };
 
 export function Nav() {
@@ -79,7 +79,7 @@ export function Nav() {
     }
   };
 
-  const leadLabel = ROUTE_LEADS[pathname] || "CH-01 // OVERVIEW";
+  const leadLabel = ROUTE_LEADS[pathname] || "01 · Medicine & Service";
   const strokeP = ecgBootDone ? 1 : Math.min(ecgBootProgress / 0.82, 1);
   const fillOpacity = ecgBootDone ? 1 : Math.min(Math.max((ecgBootProgress - 0.62) / 0.36, 0), 1);
   const strokeOpacity = ecgBootDone ? 0 : 1 - Math.max((ecgBootProgress - 0.78) / 0.22, 0);
@@ -147,7 +147,7 @@ export function Nav() {
 
         <div className="monitor-telemetry" aria-hidden="true">
           <span className="monitor-pulse-dot" />
-          <span className="mono-label">SINUS · {leadLabel}</span>
+          <span className="mono-label monitor-chapter-label">{leadLabel}</span>
         </div>
 
         <div className="top-actions">

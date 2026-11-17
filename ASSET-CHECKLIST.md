@@ -23,12 +23,13 @@ The application currently renders TikTok embed iframes with fallback poster imag
 ---
 
 ## 2. High-Resolution Photography Slots
-All current photographs are sourced from the uploaded package in `/public/assets/aistudio/`:
-- **Hero Portrait**: `hero-portrait_10ea5f30.jpg`
-- **About Portrait**: `about-portrait_57be4fc8.jpg`
-- **Photo of Us (Brother Section)**: `about-brother` (Dedicated Brother Tribute section on the About page. To add real photo of the two of you: place image at `/public/assets/aistudio/about-brother.jpg` and update `src` in `src/media.ts`)
-- **Candid Cluster**: `candid-1_45d9e56.jpg`, `candid-2_8a2b53c.jpg`, `candid-3_498b25e.jpg`, `candid-4_387f21a.jpg`
-- **Leadership Victory Proof**: `leadership-achievement-4_86e9ddb8.jpg` (563x324 non-upscaled e-vote tally card)
+All photography and poster slots are wired from `/public/assets/aistudio/`:
+- **Hero Portrait**: `hero-portrait_0e84658f.jpg` / `leadership-timeline-1_eb2d6056.jpg`
+- **About Portrait**: `about-portrait_843580fb.png`
+- **Brother Tribute Photo (`about-brother`)**: `image_a774de2b.png` (Wired into the dedicated Brother Tribute section on the About page)
+- **Candid Cluster**: `about-candid-1_cc829abd.jpg`, `about-candid-2_68704c9d.jpg`, `about-candid-3_5228782d.jpg`, `about-candid-4_ec04574a.jpg`
+- **Initiatives Gallery (1–8) & Social Strip (1–6) & Reel Covers (1–4)**: All remaining slots populated using the existing verified photographs in `/public/assets/aistudio/`.
+- **Leadership Victory Proof**: `leadership-achievement-4_a22d5faf.jpg` (563x324 non-upscaled e-vote tally card)
 
 ---
 

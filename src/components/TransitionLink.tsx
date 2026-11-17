@@ -1,6 +1,7 @@
 "use client";
 
 import React from "react";
+import { useRouter } from "next/navigation";
 import { useApp } from "./AppContext";
 
 interface TransitionLinkProps
@@ -12,10 +13,24 @@ interface TransitionLinkProps
 export function TransitionLink({
   href,
   onClick,
+  onPointerEnter,
+  onFocus,
   children,
   ...rest
 }: TransitionLinkProps) {
   const { navigateTo, isTransitioning } = useApp();
+  const router = useRouter();
+
+  const handlePrefetch = () => {
+    if (
+      href &&
+      !href.startsWith("http") &&
+      !href.startsWith("mailto:") &&
+      !href.startsWith("tel:")
+    ) {
+      router.prefetch(href);
+    }
+  };
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>) => {
     if (
@@ -42,12 +57,25 @@ export function TransitionLink({
       x: cx / Math.max(window.innerWidth, 1),
       y: 1 - cy / Math.max(window.innerHeight, 1),
     };
+    handlePrefetch();
     onClick?.(e);
     navigateTo(href, origin);
   };
 
   return (
-    <a href={href} onClick={handleClick} {...rest}>
+    <a
+      href={href}
+      onClick={handleClick}
+      onPointerEnter={(e) => {
+        handlePrefetch();
+        onPointerEnter?.(e);
+      }}
+      onFocus={(e) => {
+        handlePrefetch();
+        onFocus?.(e);
+      }}
+      {...rest}
+    >
       {children}
     </a>
   );

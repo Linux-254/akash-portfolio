@@ -52,6 +52,7 @@ export function Media({
   const sizesAttr =
     item.sizes || "(max-width: 599px) 94vw, (max-width: 1024px) 48vw, 680px";
   const showAsset = Boolean(item.src) && !imgFailed;
+  const showPosterImage = !showAsset && Boolean(item.poster) && !imgFailed;
 
   return (
     <div
@@ -94,6 +95,23 @@ export function Media({
             }}
           />
         )
+      ) : showPosterImage && item.poster ? (
+        <Image
+          src={item.poster}
+          alt={item.alt}
+          width={item.w}
+          height={item.h}
+          sizes={sizesAttr}
+          priority={isPriority}
+          loading={loading || (isPriority ? "eager" : "lazy")}
+          referrerPolicy="no-referrer"
+          onError={() => setImgFailed(true)}
+          className="media-el"
+          style={{
+            objectPosition: item.focus || "50% 25%",
+            objectFit: item.fit || "cover",
+          }}
+        />
       ) : (
         <svg
           viewBox="0 0 400 500"
@@ -142,7 +160,7 @@ export function Media({
         </svg>
       )}
 
-      {!showAsset && (
+      {!showAsset && !showPosterImage && (
         <span className="media-caption-corner">
           {caption || item.alt}
         </span>

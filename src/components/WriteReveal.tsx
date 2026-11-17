@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef } from "react";
 import gsap from "gsap";
 
 interface WriteRevealProps {
@@ -21,130 +21,177 @@ export function WriteReveal({
   autoReveal = false,
 }: WriteRevealProps) {
   const ref = useRef<HTMLElement | null>(null);
+  const glyphsHostRef = useRef<HTMLSpanElement | null>(null);
   const fullText = italicSuffix ? `${text}${italicSuffix}` : text;
   const splitIdx = text.length;
-  const [revealedCount, setRevealedCount] = useState<number>(0);
-  const [done, setDone] = useState(false);
 
   const tokens = useMemo(() => {
-    const out: { char: string; wordEnd: number; isItalic: boolean }[] = [];
-    let idx = 0;
-    const words = fullText.split(/(\s+)/);
-    for (const part of words) {
-      const start = idx;
-      const end = start + part.length;
-      for (let i = 0; i < part.length; i++) {
-        out.push({
-          char: part[i],
-          wordEnd: end,
-          isItalic: start + i >= splitIdx,
-        });
-      }
-      idx = end;
+    const out: { char: string; isItalic: boolean }[] = [];
+    for (let i = 0; i < fullText.length; i++) {
+      out.push({
+        char: fullText[i],
+        isItalic: i >= splitIdx,
+      });
     }
     return out;
   }, [fullText, splitIdx]);
 
   useEffect(() => {
-    const total = tokens.length;
+    const host = glyphsHostRef.current;
+    const node = ref.current;
+    if (!host || !node) return;
+
+    const glyphs = Array.from(host.children) as HTMLElement[];
+    const total = glyphs.length;
     if (total === 0) {
-      setDone(true);
+      node.classList.add("is-complete");
       return;
     }
+
+    const markAllInked = () => {
+      for (let i = 0; i < total; i++) {
+        glyphs[i].classList.add("is-inked");
+        glyphs[i].classList.remove("is-nib");
+      }
+      node.classList.add("is-complete");
+    };
 
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setRevealedCount(total);
-      setDone(true);
+      markAllInked();
       return;
     }
 
-    const el = ref.current;
-    const initialRect = el?.getBoundingClientRect();
-    const initialVh = window.innerHeight || 800;
-    const isAboveFold = Boolean(initialRect && initialRect.top < initialVh * 0.95);
-
-    if (autoReveal || isAboveFold) {
-      setRevealedCount(total);
-      setDone(true);
-      return;
-    }
-
+    let revealedCount = 0;
     let displayFloat = 0;
-    let lastRendered = -1;
     let target = 0;
+    let activeInTicker = false;
+    let finished = false;
+
+    const applyCount = (nextCount: number) => {
+      if (nextCount === revealedCount) return;
+      if (nextCount > revealedCount) {
+        if (revealedCount > 0 && revealedCount - 1 < total) {
+          glyphs[revealedCount - 1].classList.remove("is-nib");
+        }
+        const limit = Math.min(nextCount, total);
+        for (let i = revealedCount; i < limit; i++) {
+          glyphs[i].classList.add("is-inked");
+        }
+        if (limit < total && limit > 0) {
+          glyphs[limit - 1].classList.add("is-nib");
+        }
+      }
+      revealedCount = nextCount;
+      if (revealedCount >= total) {
+        finished = true;
+        markAllInked();
+      }
+    };
+
+    const initialRect = node.getBoundingClientRect();
+    const initialVh = window.innerHeight || 800;
+    const isInitialVisible = initialRect.top < initialVh * 0.96;
+
+    // Auto-reveal and above-the-fold headlines glide smoothly without jitter right after paint
+    if (autoReveal || isInitialVisible) {
+      const rate = Math.max(total / 0.48, 85);
+      const introTick = (_time: number, deltaTime: number) => {
+        if (finished) {
+          gsap.ticker.remove(introTick);
+          return;
+        }
+        const dt = Math.min(Math.max(deltaTime / 1000, 0.004), 0.05);
+        displayFloat = Math.min(total, displayFloat + rate * dt);
+        applyCount(Math.floor(displayFloat));
+        if (displayFloat >= total) {
+          applyCount(total);
+          gsap.ticker.remove(introTick);
+        }
+      };
+      gsap.ticker.add(introTick);
+      return () => {
+        gsap.ticker.remove(introTick);
+      };
+    }
 
     const updateTargetFromViewport = () => {
-      const node = ref.current;
-      if (!node) return;
       const vh = window.innerHeight || 800;
       const rect = node.getBoundingClientRect();
-
       if (rect.top < vh * 0.98 && rect.bottom > 0) {
-        const startY = vh * 0.98;
-        const endY = vh * 0.2;
+        const startY = vh * 0.96;
+        const endY = vh * 0.34;
         const progress = Math.min(Math.max((startY - rect.top) / (startY - endY), 0), 1);
         let scrollTarget = Math.round(progress * total);
 
-        if (rect.bottom <= vh * 0.9 || rect.top <= vh * 0.45 || progress >= 0.55) {
+        if (rect.bottom <= vh * 0.9 || rect.top <= vh * 0.42 || progress >= 0.6) {
           scrollTarget = total;
         }
         target = Math.max(target, scrollTarget);
       }
     };
 
-    // High-performance GSAP ticker for word-chunk batch reveal during fast scroll without jitter
     const tickerCallback = (_time: number, deltaTime: number) => {
-      const dt = Math.min(Math.max(deltaTime / 1000, 0.008), 0.05);
+      if (finished) {
+        gsap.ticker.remove(tickerCallback);
+        activeInTicker = false;
+        return;
+      }
+      const dt = Math.min(Math.max(deltaTime / 1000, 0.004), 0.05);
       updateTargetFromViewport();
 
       if (displayFloat < target) {
         const gap = target - displayFloat;
-        // Batch chunk acceleration during fast scrolling
-        const chunkRate = Math.max(160, total * 4.2) + gap * 8.5;
-        displayFloat = Math.min(target, displayFloat + chunkRate * dt);
+        const speed = Math.max(110, total * 2.4) + gap * 10.5;
+        displayFloat = Math.min(target, displayFloat + speed * dt);
+        applyCount(Math.floor(displayFloat));
       }
 
-      const nextCount = Math.floor(displayFloat);
-      if (nextCount !== lastRendered) {
-        lastRendered = nextCount;
-        setRevealedCount(nextCount);
-        if (nextCount >= total) {
-          setDone(true);
-          gsap.ticker.remove(tickerCallback);
-        }
+      if (revealedCount >= total) {
+        gsap.ticker.remove(tickerCallback);
+        activeInTicker = false;
       }
     };
 
-    updateTargetFromViewport();
-    if (target === 0) target = Math.round(total * 0.4);
-    gsap.ticker.add(tickerCallback);
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const entry = entries[0];
+        if (!entry) return;
+        if (entry.isIntersecting && !finished && !activeInTicker) {
+          activeInTicker = true;
+          updateTargetFromViewport();
+          target = Math.max(target, Math.round(total * 0.25));
+          gsap.ticker.add(tickerCallback);
+        }
+      },
+      { rootMargin: "120px 0px" },
+    );
+    observer.observe(node);
 
     return () => {
-      gsap.ticker.remove(tickerCallback);
+      observer.disconnect();
+      if (activeInTicker) {
+        gsap.ticker.remove(tickerCallback);
+      }
     };
   }, [tokens, autoReveal]);
 
   return (
     <Tag
       ref={ref as React.RefObject<never>}
-      className={`write-reveal ${done ? "is-complete" : ""} ${className}`}
+      className={`write-reveal ${className}`}
       style={style}
       aria-label={fullText}
     >
       <span className="sr-only">{fullText}</span>
-      <span aria-hidden="true">
-        {tokens.map((tok, i) => {
-          const isVisible = i < revealedCount;
-          const isActiveNib = !done && i === revealedCount - 1;
-          return (
-            <span
-              key={i}
-              className={`write-glyph ${tok.isItalic ? "is-italic" : ""} ${isVisible ? "is-inked" : ""} ${isActiveNib ? "is-nib" : ""}`}
-            >
-              {tok.char}
-            </span>
-          );
-        })}
+      <span ref={glyphsHostRef} aria-hidden="true">
+        {tokens.map((tok, i) => (
+          <span
+            key={i}
+            className={`write-glyph ${tok.isItalic ? "is-italic" : ""}`}
+          >
+            {tok.char}
+          </span>
+        ))}
       </span>
     </Tag>
   );

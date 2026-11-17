@@ -14,6 +14,12 @@ const PHOTO_PLATES = [
   "Northern Kenya Horizon",
 ];
 
+const PHOTO_SLIDE_SLOTS = [
+  "about-portrait",
+  "about-candid-1",
+  "initiative-gallery-4",
+];
+
 export function MobileReels() {
   const { triggerWaterBurst } = useApp();
   const [activeReel, setActiveReel] = useState<ReelItem | null>(null);
@@ -297,7 +303,7 @@ export function MobileReels() {
                 {activeReel.isPhoto ? (
                   <div className="photo-carousel" aria-label="Silent photo post carousel">
                     <Media
-                      slot={activeReel.slot}
+                      slot={PHOTO_SLIDE_SLOTS[photoSlide] || activeReel.slot}
                       variant="plain"
                       caption={`${PHOTO_PLATES[photoSlide]} (${photoSlide + 1}/${PHOTO_PLATES.length})`}
                     />

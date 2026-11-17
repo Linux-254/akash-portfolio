@@ -39,41 +39,17 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 }
 .skip-link:focus { top: 1rem; }
 
-.engine-canvas { position: fixed; inset: 0; width: 100vw; height: 100dvh; z-index: 2; pointer-events: none; }
+.engine-host { position: fixed; inset: 0; width: 100%; height: 100dvh; z-index: 2; pointer-events: none; overflow: hidden; }
+.engine-canvas { display: block; width: 100%; height: 100%; pointer-events: none; }
 .paint-canvas { position: fixed; inset: 0; width: 100vw; height: 100dvh; z-index: 80; pointer-events: none; }
-.liquid-spill-stage {
-  position: fixed; inset: 0; width: 100vw; height: 100dvh;
-  z-index: 85; pointer-events: none; overflow: hidden;
-  opacity: 0; visibility: hidden;
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  background: radial-gradient(ellipse 70% 60% at 75% 25%, color-mix(in srgb, var(--c-bold) 18%, transparent) 0%, transparent 68%),
-              radial-gradient(ellipse 65% 55% at 25% 75%, color-mix(in srgb, var(--c-bold) 14%, transparent) 0%, transparent 68%);
-  transition: opacity 0.32s cubic-bezier(0.16, 1, 0.3, 1), visibility 0.32s ease;
+.paint-fallback {
+  position: fixed; inset: 0; z-index: 80; pointer-events: none; opacity: 0;
+  background:
+    radial-gradient(ellipse 75% 65% at 75% 25%, color-mix(in srgb, var(--c-bold) 86%, var(--c-neutral-dark)) 0%, var(--c-neutral-dark) 100%);
+  transition: opacity 0.36s cubic-bezier(0.22, 1, 0.36, 1);
 }
-.liquid-spill-stage.is-active {
-  opacity: 1; visibility: visible; pointer-events: auto;
-}
-.liquid-spill-svg {
-  position: absolute; inset: 0; width: 100%; height: 100%; display: block; pointer-events: none;
-}
-.liquid-wave-base {
-  fill: url(#fog-gradient-base);
-  opacity: 0.82;
-}
-.liquid-wave-mid {
-  fill: url(#fog-gradient-mid);
-  opacity: 0.72;
-}
-.liquid-wave-foam {
-  fill: none;
-  stroke: url(#fog-gradient-mist);
-  stroke-width: 8;
-  opacity: 0.65;
-  filter: blur(2px);
-}
-.paint-fallback { position: fixed; inset: 0; z-index: 80; pointer-events: none; background: var(--c-bold); opacity: 0; transition: opacity 0.24s ease; }
-.paint-fallback.is-active { opacity: 1; }
+.paint-fallback.is-active { opacity: 0.94; pointer-events: auto; }
+.paint-fallback.is-draining { opacity: 0; pointer-events: none; }
 .grain-overlay {
   position: fixed; inset: 0; z-index: 70; pointer-events: none; opacity: 0.04;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23g)'/%3E%3C/svg%3E");
@@ -113,22 +89,24 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   stroke-width: 1.4;
 }
 
-/* Centered Live Watermark ECG Lifeline (Smooth Cursive Wave) */
+/* Centered Live Watermark ECG Lifeline (Hospital Monitor Sweep) */
 .ecg-center-watermark {
   position: fixed; left: 0; right: 0; top: 50%; transform: translateY(-50%);
-  height: clamp(82px, 14vh, 136px); z-index: 3; pointer-events: none;
-  opacity: 0.62;
+  height: clamp(86px, 14vh, 140px); z-index: 3; pointer-events: none;
+  opacity: 0.68;
   filter: drop-shadow(0 0 10px color-mix(in srgb, var(--c-bold) 32%, transparent));
 }
-.ecg-svg { width: 100%; height: 100%; display: block; }
+.ecg-svg { width: 100%; height: 100%; display: block; overflow: visible; }
 .ecg-watermark-word {
   font-family: var(--font-fraunces), var(--font-display);
   font-style: italic; font-weight: 400; font-size: clamp(22px, 3vw, 30px); letter-spacing: 0.32em;
   fill: var(--c-bold);
-  transition: opacity 0.4s ease;
+  transform-box: fill-box;
+  transform-origin: center center;
+  will-change: transform, opacity;
 }
 
-/* Handwriting-style Per-Letter / Word Scroll Reveal */
+/* Handwriting-style Per-Letter / Word Scroll Reveal (Zero layout reflow) */
 .sr-only {
   position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px;
   overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0;
@@ -136,7 +114,7 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
 .write-reveal { position: relative; }
 .write-glyph {
   display: inline; opacity: 0.06;
-  transition: opacity 0.16s ease-out, color 0.18s ease-out;
+  transition: opacity 0.22s cubic-bezier(0.22, 1, 0.36, 1), color 0.24s ease-out;
 }
 .write-glyph.is-inked { opacity: 1; }
 .write-glyph.is-nib {
@@ -144,8 +122,8 @@ button { font: inherit; color: inherit; background: none; border: 0; cursor: poi
   color: var(--c-bold);
 }
 .write-glyph.is-nib::after {
-  content: ""; display: inline-block; width: 1.5px; height: 0.9em; vertical-align: -0.08em;
-  margin-left: 1px; background: var(--c-bold);
+  content: ""; position: absolute; right: -1.5px; top: 0.14em; width: 1.5px; height: 0.85em;
+  pointer-events: none; background: var(--c-bold);
   box-shadow: 0 0 6px color-mix(in srgb, var(--c-bold) 65%, transparent);
 }
 
@@ -227,6 +205,13 @@ header:nth-of-type(1) > a:nth-of-type(1):hover > span:nth-of-type(1) > span:nth-
 .monitor-pulse-dot {
   width: 7px; height: 7px; border-radius: 50%; background: var(--c-bold);
   box-shadow: 0 0 8px var(--c-bold); animation: monitorBlink 1.15s ease-in-out infinite;
+}
+.monitor-chapter-label {
+  font-size: 0.7rem;
+  letter-spacing: 0.14em;
+  color: color-mix(in srgb, var(--c-neutral-dark) 78%, var(--c-bold));
+  opacity: 0.92;
+  white-space: nowrap;
 }
 .monitor-divider { opacity: 0.3; font-family: var(--font-mono); font-size: 0.7rem; }
 @keyframes monitorBlink {

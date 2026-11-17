@@ -125,7 +125,7 @@ export default function AboutPage() {
                     <Media
                       slot={about.brother.mediaSlot}
                       variant="diagonal"
-                      caption="Photo of Us: Abdikhaliq & his brother — lifelong anchor & Northern Kenya foundation"
+                      caption="Abdikhaliq's brother — lifelong anchor & Northern Kenya foundation"
                     />
                   </div>
                 </div>
