@@ -10,7 +10,7 @@ import { WriteReveal } from "@/components/WriteReveal";
 
 gsap.registerPlugin(ScrollTrigger);
 
-const ACH_VARIANTS: MediaVariant[] = ["diagonal", "duotone", "arch"];
+const ACH_VARIANTS: MediaVariant[] = ["arch", "diagonal", "duotone", "plain"];
 
 export default function LeadershipPage() {
   const wrapRef = useRef<HTMLDivElement | null>(null);
@@ -58,31 +58,45 @@ export default function LeadershipPage() {
 
   return (
     <div ref={wrapRef} className="subpage-wrap">
-      <section className="band subpage-hero">
-        <div className="band-inner">
-          <p className="mono-label">{leadership.kicker}</p>
-          <h1 className="hero-headline" style={{ marginTop: "0.75rem" }}>
-            {leadership.philosophyTitle}
-          </h1>
-          <WriteReveal
-            text={leadership.philosophyText}
-            className="lead-copy"
-            style={{ marginTop: "1.4rem" }}
-          />
+      <section className="band subpage-hero" data-avatar-mood="proud-resolve">
+        <div className="band-inner hero-grid" style={{ alignItems: "center" }}>
+          <div className="hero-text-col">
+            <p className="mono-label">{leadership.kicker}</p>
+            <WriteReveal
+              as="h1"
+              text={leadership.philosophyTitle}
+              className="hero-headline"
+              style={{ marginTop: "0.75rem" }}
+              autoReveal
+            />
+            <WriteReveal
+              text={leadership.philosophyText}
+              className="lead-copy"
+              style={{ marginTop: "1.4rem" }}
+              autoReveal
+            />
+          </div>
+          <div className="hero-portrait-wrap">
+            <Media slot="leadership-hero" variant="diagonal" priority loading="eager" />
+          </div>
         </div>
       </section>
 
-      <section ref={stageRef} className="beats-stage">
+      <section ref={stageRef} className="beats-stage" data-avatar-mood="serious-reading">
         <div ref={trackRef} className="horizontal-track">
           {leadership.positions.map((pos, idx) => (
             <article key={pos.role} className="beat-panel">
               <div className="beat-panel-inner">
                 <span className="beat-giant-num" aria-hidden="true">{pos.period}</span>
                 <p className="mono-label">0{idx + 1} · {pos.org}</p>
-                <h2 className="section-heading">{pos.role}</h2>
+                <WriteReveal as="h2" text={pos.role} className="section-heading" />
                 <WriteReveal text={pos.focus} className="lead-copy" />
                 <div style={{ width: "min(280px, 70vw)", marginTop: "1.5rem" }}>
-                  <Media slot={`leadership-timeline-${idx + 1}`} variant="circle" />
+                  <Media
+                    slot={`leadership-timeline-${idx + 1}`}
+                    variant="circle"
+                    className="timeline-thumb-frame"
+                  />
                 </div>
               </div>
             </article>
@@ -90,11 +104,15 @@ export default function LeadershipPage() {
         </div>
       </section>
 
-      <section className="band leadership-victory-band">
+      <section className="band leadership-victory-band" data-avatar-mood="proud-resolve">
         <div className="band-inner">
           <p className="mono-label">Landmark Student Welfare Victory</p>
           <span ref={statRef} className="stat-giant">50%</span>
-          <h2 className="section-heading">{leadership.achievements[0].title}</h2>
+          <WriteReveal
+            as="h2"
+            text={leadership.achievements[0].title}
+            className="section-heading"
+          />
           <WriteReveal
             text={leadership.achievements[0].text}
             className="lead-copy"
@@ -103,18 +121,33 @@ export default function LeadershipPage() {
         </div>
       </section>
 
-      <section className="band">
+      <section className="band" data-avatar-mood="proud-resolve">
         <div className="band-inner">
-          {leadership.achievements.map((ach, i) => (
-            <div key={ach.index} className="teaser-grid" style={{ marginBottom: "5rem" }}>
-              <div>
-                <p className="mono-label">Achievement {ach.index} · {ach.stat}</p>
-                <h3 className="section-heading">{ach.title}</h3>
-                <WriteReveal text={ach.text} className="lead-copy" />
-              </div>
-              <Media slot={ach.slot} variant={ACH_VARIANTS[i % ACH_VARIANTS.length]} />
-            </div>
-          ))}
+          {leadership.achievements.map((ach, i) => {
+            const isProofCard = ach.slot === "leadership-achievement-4";
+            const isReversed = i === 1;
+            return (
+              <article
+                key={ach.index}
+                className={`achievement-row achievement-row-${i + 1} ${isReversed ? "is-reversed" : ""}`}
+                data-avatar-mood={isProofCard ? "serious-reading" : "proud-resolve"}
+              >
+                <div className="achievement-copy">
+                  <p className="mono-label">Achievement {ach.index} · {ach.stat}</p>
+                  <WriteReveal as="h2" text={ach.title} className="section-heading" />
+                  <WriteReveal text={ach.text} className="lead-copy" />
+                </div>
+
+                <div className={isProofCard ? "achievement-proof-wrap" : "achievement-media-wrap"}>
+                  <Media
+                    slot={ach.slot}
+                    variant={ACH_VARIANTS[i % ACH_VARIANTS.length]}
+                  />
+                </div>
+              </article>
+            );
+          })}
+
           <TransitionLink href="/initiatives" className="editorial-link">
             Next: Community Initiatives &amp; CBO →
           </TransitionLink>

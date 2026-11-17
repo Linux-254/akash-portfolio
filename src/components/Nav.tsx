@@ -15,15 +15,6 @@ const ROUTE_LEADS: Record<string, string> = {
   "/contact": "CH-05 // DISPATCH",
 };
 
-// Sequential smooth Bezier paths forming "A K A S H" calibrated cleanly to sync with ecgBootProgress
-const LETTER_PATHS = [
-  "M 4 28 C 8 18, 12 6, 16 6 C 20 6, 24 18, 28 28 M 9 20 Q 16 17 23 20",
-  "M 38 6 C 38 14, 38 22, 38 28 M 52 7 C 46 12, 42 16, 38 18 C 44 21, 48 24, 53 28",
-  "M 62 28 C 66 18, 70 6, 74 6 C 78 6, 82 18, 86 28 M 67 20 Q 74 17 81 20",
-  "M 109 9 C 102 5, 93 8, 94 14 C 95 19, 110 18, 110 24 C 110 29, 98 30, 93 26",
-  "M 120 6 L 120 28 M 120 17 C 126 16, 132 16, 138 17 M 138 6 L 138 28",
-];
-
 export function Nav() {
   const {
     menuOpen,
@@ -89,6 +80,9 @@ export function Nav() {
   };
 
   const leadLabel = ROUTE_LEADS[pathname] || "CH-01 // OVERVIEW";
+  const strokeP = ecgBootDone ? 1 : Math.min(ecgBootProgress / 0.82, 1);
+  const fillOpacity = ecgBootDone ? 1 : Math.min(Math.max((ecgBootProgress - 0.62) / 0.36, 0), 1);
+  const strokeOpacity = ecgBootDone ? 0 : 1 - Math.max((ecgBootProgress - 0.78) / 0.22, 0);
 
   return (
     <>
@@ -96,7 +90,7 @@ export function Nav() {
         Skip to content
       </a>
 
-      <header className={`top-bar life-monitor-bar ${hidden && !menuOpen ? "is-hidden" : ""}`}>
+      <header className={`top-bar ${hidden && !menuOpen ? "is-hidden" : ""}`}>
         <TransitionLink
           href="/"
           className="wordmark"
@@ -108,36 +102,43 @@ export function Nav() {
           <span className={`wordmark-akash ${ecgBootDone ? "is-revealed" : ""}`}>
             <svg
               className="wordmark-ecg-trace"
-              viewBox="0 0 144 34"
+              viewBox="0 0 124 34"
               aria-hidden="true"
             >
-              {LETTER_PATHS.map((d, i) => {
-                const segStart = i * 0.18;
-                const segSpan = 0.28;
-                const localP = Math.min(
-                  Math.max((ecgBootProgress - segStart) / segSpan, 0),
-                  1,
-                );
-                return (
-                  <path
-                    key={i}
-                    d={d}
-                    fill="none"
-                    stroke="var(--c-bold)"
-                    strokeWidth="1.6"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    pathLength={1}
-                    style={{
-                      strokeDasharray: 1,
-                      strokeDashoffset: 1 - localP,
-                      opacity: ecgBootDone ? 0 : 0.96,
-                    }}
-                  />
-                );
-              })}
+              <path
+                d="M 0 26 L 10 26 L 13 21 L 16 29 L 19 10 L 22 30 L 25 26 L 122 26"
+                fill="none"
+                stroke="var(--c-bold)"
+                strokeWidth="1.15"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                pathLength={1}
+                style={{
+                  strokeDasharray: 1,
+                  strokeDashoffset: 1 - strokeP,
+                  opacity: strokeOpacity * 0.75,
+                }}
+              />
+              <text
+                x="62"
+                y="24"
+                textAnchor="middle"
+                className="wordmark-svg-stroke"
+                style={{
+                  strokeDasharray: 180,
+                  strokeDashoffset: 180 * (1 - strokeP),
+                  opacity: strokeOpacity,
+                }}
+              >
+                {content.owner.shortName}
+              </text>
             </svg>
-            <span className="wordmark-text">{content.owner.shortName}</span>
+            <span
+              className="wordmark-text"
+              style={{ opacity: fillOpacity }}
+            >
+              {content.owner.shortName}
+            </span>
           </span>
           <span className="wordmark-dot" aria-hidden="true">
             .
@@ -146,16 +147,14 @@ export function Nav() {
 
         <div className="monitor-telemetry" aria-hidden="true">
           <span className="monitor-pulse-dot" />
-          <span className="mono-label">72 BPM · SINUS</span>
-          <span className="monitor-divider">|</span>
-          <span className="mono-label monitor-lead-name">{leadLabel}</span>
+          <span className="mono-label">SINUS · {leadLabel}</span>
         </div>
 
         <div className="top-actions">
           <button
             ref={magneticRef}
             type="button"
-            className="menu-trigger monitor-menu-btn"
+            className="menu-trigger"
             aria-expanded={menuOpen}
             aria-controls="site-menu-overlay"
             onClick={handleMenuClick}
@@ -163,8 +162,7 @@ export function Nav() {
             onPointerEnter={() => setCursorMode("link")}
             onPointerLeave={handleMagneticLeave}
           >
-            <span className="monitor-btn-led" aria-hidden="true" />
-            <span>{menuOpen ? "CLOSE MONITOR" : "MONITOR // MENU"}</span>
+            {menuOpen ? "Close" : "Menu"}
           </button>
         </div>
       </header>

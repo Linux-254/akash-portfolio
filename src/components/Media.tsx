@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { preload } from "react-dom";
+import Image from "next/image";
 import { MEDIA_SLOTS } from "@/media";
 import { useApp } from "./AppContext";
 
@@ -20,6 +20,7 @@ interface MediaProps {
   variant?: MediaVariant;
   className?: string;
   priority?: boolean;
+  loading?: "eager" | "lazy";
   caption?: string;
 }
 
@@ -28,6 +29,7 @@ export function Media({
   variant = "plain",
   className = "",
   priority = false,
+  loading,
   caption,
 }: MediaProps) {
   const { setCursorMode } = useApp();
@@ -36,25 +38,19 @@ export function Media({
 
   useEffect(() => {
     setImgFailed(false);
-    if (priority && item?.src && item.kind === "image") {
-      preload(item.src, {
-        as: "image",
-        fetchPriority: "high",
-        imageSrcSet: item.avifSrcSet || item.webpSrcSet || item.fallbackSrcSet,
-        imageSizes: item.sizes,
-      });
-    }
-  }, [priority, item]);
+  }, [slot, item?.src]);
 
   if (!item) return null;
 
+  const isPriority =
+    priority ||
+    slot === "hero-portrait" ||
+    slot === "leadership-hero" ||
+    slot === "initiative-hero";
   const ratioStyle = { aspectRatio: `${item.w} / ${item.h}` };
   const uid = item.id.replace(/[^a-z0-9]/gi, "");
   const sizesAttr =
     item.sizes || "(max-width: 599px) 94vw, (max-width: 1024px) 48vw, 680px";
-  const resolvedFallbackSrcSet =
-    item.fallbackSrcSet ||
-    (item.src && item.src2x ? `${item.src} 1x, ${item.src2x} 2x` : undefined);
   const showAsset = Boolean(item.src) && !imgFailed;
 
   return (
@@ -81,28 +77,22 @@ export function Media({
             className="media-el"
           />
         ) : (
-          <picture className="media-picture">
-            {item.avifSrcSet && (
-              <source type="image/avif" srcSet={item.avifSrcSet} sizes={sizesAttr} />
-            )}
-            {item.webpSrcSet && (
-              <source type="image/webp" srcSet={item.webpSrcSet} sizes={sizesAttr} />
-            )}
-            <img
-              src={item.src}
-              srcSet={resolvedFallbackSrcSet}
-              sizes={resolvedFallbackSrcSet ? sizesAttr : undefined}
-              alt={item.alt}
-              width={item.w}
-              height={item.h}
-              loading={priority ? "eager" : "lazy"}
-              fetchPriority={priority ? "high" : "auto"}
-              decoding={priority ? "sync" : "async"}
-              referrerPolicy="no-referrer"
-              onError={() => setImgFailed(true)}
-              className="media-el"
-            />
-          </picture>
+          <Image
+            src={item.src}
+            alt={item.alt}
+            width={item.w}
+            height={item.h}
+            sizes={sizesAttr}
+            priority={isPriority}
+            loading={loading || (isPriority ? "eager" : "lazy")}
+            referrerPolicy="no-referrer"
+            onError={() => setImgFailed(true)}
+            className="media-el"
+            style={{
+              objectPosition: item.focus || "50% 50%",
+              objectFit: item.fit || "cover",
+            }}
+          />
         )
       ) : (
         <svg

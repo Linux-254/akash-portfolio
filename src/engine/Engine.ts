@@ -90,6 +90,8 @@ export class Engine {
     this.scene.environment = buildStudioEnvironment(this.renderer, theme);
     this.mats = createStethoscopeMaterials(theme);
     this.assembly = buildStethoscopeParts(this.mats, lowDetail);
+    this.assembly.root.position.set(3.8, -0.4, -3.5);
+    this.assembly.root.scale.setScalar(0.014);
     this.scene.add(this.assembly.root);
 
     this.routeRing = new THREE.Mesh(

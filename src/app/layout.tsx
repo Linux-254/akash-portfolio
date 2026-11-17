@@ -18,8 +18,6 @@ import { PaintTransition } from "@/components/PaintTransition";
 import { CursorDot } from "@/components/CursorDot";
 import { SwerveField } from "@/components/SwerveField";
 import { EcgLine } from "@/components/EcgLine";
-import { DoctorAvatar } from "@/components/DoctorAvatar";
-
 const instrumentSerif = Instrument_Serif({
   weight: "400",
   style: ["normal", "italic"],
@@ -68,6 +66,14 @@ export const metadata: Metadata = {
     description:
       "Medicine, student advocacy, and Northern Kenya community empowerment.",
     type: "website",
+    images: [
+      {
+        url: "/assets/aistudio/og-image_86e9ddb8.jpg",
+        width: 1200,
+        height: 630,
+        alt: "Abdikhaliq Abdi — student leader and community builder",
+      },
+    ],
   },
 };
 
@@ -93,7 +99,6 @@ export default function RootLayout({
           <CanvasHost />
           <SmoothScroll />
           <Nav />
-          <DoctorAvatar />
           <Intro />
           <PaintTransition />
           <CursorDot />

@@ -1,104 +1,137 @@
 "use client";
 
 import React, { useEffect, useMemo, useRef, useState } from "react";
+import gsap from "gsap";
 
 interface WriteRevealProps {
   text: string;
+  italicSuffix?: string;
   className?: string;
-  as?: "p" | "span" | "blockquote" | "div" | "strong";
+  as?: "p" | "span" | "blockquote" | "div" | "strong" | "h1" | "h2";
   style?: React.CSSProperties;
+  autoReveal?: boolean;
 }
 
 export function WriteReveal({
   text,
+  italicSuffix,
   className = "",
   as: Tag = "p",
   style,
+  autoReveal = false,
 }: WriteRevealProps) {
   const ref = useRef<HTMLElement | null>(null);
+  const fullText = italicSuffix ? `${text}${italicSuffix}` : text;
+  const splitIdx = text.length;
   const [revealedCount, setRevealedCount] = useState<number>(0);
   const [done, setDone] = useState(false);
 
   const tokens = useMemo(() => {
-    const out: { char: string; wordEnd: number }[] = [];
+    const out: { char: string; wordEnd: number; isItalic: boolean }[] = [];
     let idx = 0;
-    const words = text.split(/(\s+)/);
+    const words = fullText.split(/(\s+)/);
     for (const part of words) {
       const start = idx;
       const end = start + part.length;
       for (let i = 0; i < part.length; i++) {
-        out.push({ char: part[i], wordEnd: end });
+        out.push({
+          char: part[i],
+          wordEnd: end,
+          isItalic: start + i >= splitIdx,
+        });
       }
       idx = end;
     }
     return out;
-  }, [text]);
+  }, [fullText, splitIdx]);
 
   useEffect(() => {
-    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setRevealedCount(tokens.length);
+    const total = tokens.length;
+    if (total === 0) {
       setDone(true);
       return;
     }
 
-    let lastY = window.scrollY;
-    let lastT = performance.now();
-    let rafId = 0;
-    let shown = 0;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setRevealedCount(total);
+      setDone(true);
+      return;
+    }
 
-    const tick = () => {
-      const el = ref.current;
-      if (!el) return;
-      const now = performance.now();
-      const dt = Math.max((now - lastT) / 1000, 0.016);
-      const y = window.scrollY;
-      const vel = Math.abs(y - lastY) / dt;
-      lastY = y;
-      lastT = now;
+    const el = ref.current;
+    const initialRect = el?.getBoundingClientRect();
+    const initialVh = window.innerHeight || 800;
+    const isAboveFold = Boolean(initialRect && initialRect.top < initialVh * 0.95);
 
-      const rect = el.getBoundingClientRect();
+    if (autoReveal || isAboveFold) {
+      setRevealedCount(total);
+      setDone(true);
+      return;
+    }
+
+    let displayFloat = 0;
+    let lastRendered = -1;
+    let target = 0;
+
+    const updateTargetFromViewport = () => {
+      const node = ref.current;
+      if (!node) return;
       const vh = window.innerHeight || 800;
-      const startY = vh * 0.96;
-      const endY = vh * 0.42;
-      const progress = Math.min(Math.max((startY - rect.top) / (startY - endY), 0), 1);
+      const rect = node.getBoundingClientRect();
 
-      let target = Math.round(progress * tokens.length);
-      if (rect.top <= vh * 0.46 || progress >= 0.96) {
-        target = tokens.length;
-      } else if (vel > 420 && target > shown && target < tokens.length) {
-        target = tokens[Math.min(target, tokens.length - 1)].wordEnd;
-      }
+      if (rect.top < vh * 0.98 && rect.bottom > 0) {
+        const startY = vh * 0.98;
+        const endY = vh * 0.2;
+        const progress = Math.min(Math.max((startY - rect.top) / (startY - endY), 0), 1);
+        let scrollTarget = Math.round(progress * total);
 
-      if (target !== shown) {
-        shown = target;
-        setRevealedCount(shown);
-        setDone(shown >= tokens.length);
+        if (rect.bottom <= vh * 0.9 || rect.top <= vh * 0.45 || progress >= 0.55) {
+          scrollTarget = total;
+        }
+        target = Math.max(target, scrollTarget);
       }
     };
 
-    const onScroll = () => {
-      cancelAnimationFrame(rafId);
-      rafId = requestAnimationFrame(tick);
+    // High-performance GSAP ticker for word-chunk batch reveal during fast scroll without jitter
+    const tickerCallback = (_time: number, deltaTime: number) => {
+      const dt = Math.min(Math.max(deltaTime / 1000, 0.008), 0.05);
+      updateTargetFromViewport();
+
+      if (displayFloat < target) {
+        const gap = target - displayFloat;
+        // Batch chunk acceleration during fast scrolling
+        const chunkRate = Math.max(160, total * 4.2) + gap * 8.5;
+        displayFloat = Math.min(target, displayFloat + chunkRate * dt);
+      }
+
+      const nextCount = Math.floor(displayFloat);
+      if (nextCount !== lastRendered) {
+        lastRendered = nextCount;
+        setRevealedCount(nextCount);
+        if (nextCount >= total) {
+          setDone(true);
+          gsap.ticker.remove(tickerCallback);
+        }
+      }
     };
 
-    tick();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll, { passive: true });
+    updateTargetFromViewport();
+    if (target === 0) target = Math.round(total * 0.4);
+    gsap.ticker.add(tickerCallback);
+
     return () => {
-      cancelAnimationFrame(rafId);
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
+      gsap.ticker.remove(tickerCallback);
     };
-  }, [tokens]);
+  }, [tokens, autoReveal]);
 
   return (
     <Tag
       ref={ref as React.RefObject<never>}
       className={`write-reveal ${done ? "is-complete" : ""} ${className}`}
       style={style}
-      aria-label={text}
+      aria-label={fullText}
     >
-      <span className="sr-only">{text}</span>
+      <span className="sr-only">{fullText}</span>
       <span aria-hidden="true">
         {tokens.map((tok, i) => {
           const isVisible = i < revealedCount;
@@ -106,7 +139,7 @@ export function WriteReveal({
           return (
             <span
               key={i}
-              className={`write-glyph ${isVisible ? "is-inked" : ""} ${isActiveNib ? "is-nib" : ""}`}
+              className={`write-glyph ${tok.isItalic ? "is-italic" : ""} ${isVisible ? "is-inked" : ""} ${isActiveNib ? "is-nib" : ""}`}
             >
               {tok.char}
             </span>

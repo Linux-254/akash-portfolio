@@ -33,17 +33,26 @@ export default function AboutPage() {
 
   return (
     <div ref={wrapRef} className="subpage-wrap">
-      <section className="band subpage-hero">
+      <section className="band subpage-hero" data-avatar-mood="serious-reading">
         <div className="band-inner">
           <p className="mono-label">{about.kicker}</p>
-          <h1 className="hero-headline" style={{ marginTop: "0.75rem" }}>
-            {about.title}
-          </h1>
-          <WriteReveal text={about.lead} className="lead-copy" style={{ marginTop: "1.4rem" }} />
+          <WriteReveal
+            as="h1"
+            text={about.title}
+            className="hero-headline"
+            style={{ marginTop: "0.75rem" }}
+            autoReveal
+          />
+          <WriteReveal
+            text={about.lead}
+            className="lead-copy"
+            style={{ marginTop: "1.4rem" }}
+            autoReveal
+          />
         </div>
       </section>
 
-      <section className="band">
+      <section className="band" data-avatar-mood="serious-reading">
         <div className="band-inner about-split">
           <div className="about-sticky-col">
             <Media slot="about-portrait" variant="arch" />
@@ -58,9 +67,9 @@ export default function AboutPage() {
             <WriteReveal text={about.bio} className="lead-copy" />
 
             {about.chapters.map((ch) => (
-              <article key={ch.index} className="story-chapter">
+              <article key={ch.index} className="story-chapter" data-avatar-mood="serious-reading">
                 <span className="mono-label">{ch.index}</span>
-                <h2 className="section-heading">{ch.heading}</h2>
+                <WriteReveal as="h2" text={ch.heading} className="section-heading" />
                 <WriteReveal text={ch.text} className="lead-copy" />
               </article>
             ))}
@@ -75,14 +84,56 @@ export default function AboutPage() {
               <div className="candid-tilt tilt-slight">
                 <Media slot="about-candid-3" variant="circle" />
               </div>
+              <div className="candid-tilt tilt-fourth">
+                <Media slot="about-candid-4" variant="mask-fade" />
+              </div>
             </div>
-
-            <TransitionLink href="/leadership" className="editorial-link">
-              Next: Leadership &amp; Impact →
-            </TransitionLink>
           </div>
         </div>
       </section>
+
+      {about.brother && (
+        <section className="band brother-tribute-band" data-avatar-mood="proud-resolve">
+          <div className="band-inner">
+            <article className="story-chapter brother-story-chapter">
+              <div className="brother-grid">
+                <div className="brother-copy-col">
+                  <span className="mono-label">{about.brother.kicker}</span>
+                  <WriteReveal
+                    as="h2"
+                    text={about.brother.heading}
+                    className="section-heading"
+                    style={{ marginTop: "0.5rem" }}
+                  />
+                  <blockquote
+                    className="pull-quote"
+                    style={{ marginTop: "1.25rem", marginBottom: "1.25rem" }}
+                  >
+                    {about.brother.quote}
+                  </blockquote>
+                  <WriteReveal text={about.brother.text} className="lead-copy" />
+
+                  <div style={{ marginTop: "2rem" }}>
+                    <TransitionLink href="/leadership" className="editorial-link">
+                      Next: Leadership &amp; Impact →
+                    </TransitionLink>
+                  </div>
+                </div>
+
+                <div className="brother-photo-col">
+                  <div className="brother-photo-frame">
+                    <Media
+                      slot={about.brother.mediaSlot}
+                      variant="diagonal"
+                      caption="Photo of Us: Abdikhaliq & his brother — lifelong anchor & Northern Kenya foundation"
+                    />
+                  </div>
+                </div>
+              </div>
+            </article>
+          </div>
+        </section>
+      )}
     </div>
   );
 }

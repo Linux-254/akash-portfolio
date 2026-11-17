@@ -6,7 +6,6 @@ import { ScrollTrigger } from "gsap/ScrollTrigger";
 import content from "@/content.json";
 import { Media } from "@/components/Media";
 import { Marquee } from "@/components/Marquee";
-import { SplitText } from "@/components/SplitText";
 import { TransitionLink } from "@/components/TransitionLink";
 import { MobileReels } from "@/components/MobileReels";
 import { WriteReveal } from "@/components/WriteReveal";
@@ -92,19 +91,26 @@ export default function HomePage() {
 
   return (
     <div ref={canvasWrapRef} className="home-canvas">
-      <section className="band hero-band">
+      <section className="band hero-band" data-avatar-mood="welcome">
         <div className="band-inner">
           <div className="hero-grid">
             <div className="hero-text-col">
-              <p className="mono-label">{home.kicker}</p>
-              <h1 className="hero-headline">
-                <SplitText text={home.headlineBefore} />
-                <SplitText text={home.headlineItalic} italic />
-              </h1>
+              <div className="hero-super-caption">
+                Abdikhaliq Akash
+                <em>Medicine, Advocacy, Community &amp; Service</em>
+              </div>
+              <WriteReveal
+                as="h1"
+                text={home.headlineBefore}
+                italicSuffix={home.headlineItalic}
+                className="hero-headline"
+                autoReveal
+              />
               <WriteReveal
                 text={home.subline}
                 className="lead-copy"
                 style={{ marginTop: "1.4rem" }}
+                autoReveal
               />
               <div className="hero-cta-group">
                 <button
@@ -139,7 +145,7 @@ export default function HomePage() {
               <div key={item.label} className="proof-item">
                 <span className="mono-label">{item.label}</span>
                 <strong className="proof-value">{item.value}</strong>
-                <WriteReveal text={item.detail} className="proof-desc" />
+                <WriteReveal text={item.detail} className="proof-desc" autoReveal />
               </div>
             ))}
           </div>
@@ -149,7 +155,11 @@ export default function HomePage() {
       <section id="story-beats" ref={stageRef} className="beats-stage">
         <div ref={trackRef} className="horizontal-track">
           {home.beats.map((beat, idx) => (
-            <article key={beat.id} className={`beat-panel beat-panel-${idx}`}>
+            <article
+              key={beat.id}
+              className={`beat-panel beat-panel-${idx}`}
+              data-avatar-mood={idx === 2 ? "proud-resolve" : idx >= 3 ? "compassionate" : "serious-reading"}
+            >
               <div className="beat-panel-inner">
                 <span className="beat-giant-num" aria-hidden="true">
                   0{idx + 1}
@@ -157,7 +167,7 @@ export default function HomePage() {
                 <p className="mono-label">
                   {beat.index} · {beat.eyebrow}
                 </p>
-                <h2 className="section-heading">{beat.title}</h2>
+                <WriteReveal as="h2" text={beat.title} className="section-heading" />
                 <WriteReveal text={beat.body} className="lead-copy" />
               </div>
             </article>
@@ -167,13 +177,13 @@ export default function HomePage() {
 
       <Marquee words={home.marqueeWords} />
 
-      <section className="band teaser-leadership">
+      <section className="band teaser-leadership" data-avatar-mood="proud-resolve">
         <div className="band-inner teaser-grid">
           <div>
             <p className="mono-label">
               {home.leadershipTeaser.index} · {home.leadershipTeaser.kicker}
             </p>
-            <h2 className="section-heading">{home.leadershipTeaser.title}</h2>
+            <WriteReveal as="h2" text={home.leadershipTeaser.title} className="section-heading" />
             <span className="stat-giant">{home.leadershipTeaser.stat}</span>
             <WriteReveal text={home.leadershipTeaser.statLabel} className="lead-copy" />
             <TransitionLink
@@ -187,14 +197,14 @@ export default function HomePage() {
         </div>
       </section>
 
-      <section className="band teaser-initiatives">
+      <section className="band teaser-initiatives" data-avatar-mood="compassionate">
         <div className="band-inner teaser-grid">
           <Media slot="initiative-hero" variant="diagonal" />
           <div>
             <p className="mono-label">
               {home.initiativesTeaser.index} · {home.initiativesTeaser.kicker}
             </p>
-            <h2 className="section-heading">{home.initiativesTeaser.title}</h2>
+            <WriteReveal as="h2" text={home.initiativesTeaser.title} className="section-heading" />
             <WriteReveal text={home.initiativesTeaser.body} className="lead-copy" />
             <TransitionLink
               href={home.initiativesTeaser.href}
@@ -207,23 +217,6 @@ export default function HomePage() {
       </section>
 
       <MobileReels />
-
-      <section className="band final-cta-band">
-        <div className="band-inner">
-          <p className="mono-label">{home.finalCta.kicker}</p>
-          <TransitionLink
-            href={home.finalCta.href}
-            className="final-cta-link"
-          >
-            {home.finalCta.headline}
-          </TransitionLink>
-          <WriteReveal
-            text={home.finalCta.body}
-            className="lead-copy"
-            style={{ margin: "1.4rem auto 0" }}
-          />
-        </div>
-      </section>
     </div>
   );
 }

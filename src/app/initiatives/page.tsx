@@ -21,17 +21,29 @@ export default function InitiativesPage() {
 
   return (
     <div className="subpage-wrap meridian-bg">
-      <section className="band subpage-hero">
+      <section className="band subpage-hero" data-avatar-mood="compassionate">
         <div className="band-inner">
-          <p className="mono-label">{initiatives.kicker}</p>
-          <h1 className="hero-headline" style={{ marginTop: "0.75rem" }}>
-            {initiatives.title}
-          </h1>
-          <WriteReveal
-            text={initiatives.text}
-            className="lead-copy"
-            style={{ marginTop: "1.4rem" }}
-          />
+          <div className="hero-grid" style={{ alignItems: "center" }}>
+            <div className="hero-text-col">
+              <p className="mono-label">{initiatives.kicker}</p>
+              <WriteReveal
+                as="h1"
+                text={initiatives.title}
+                className="hero-headline"
+                style={{ marginTop: "0.75rem" }}
+                autoReveal
+              />
+              <WriteReveal
+                text={initiatives.text}
+                className="lead-copy"
+                style={{ marginTop: "1.4rem" }}
+                autoReveal
+              />
+            </div>
+            <div className="hero-portrait-wrap">
+              <Media slot="initiative-hero" variant="diagonal" priority />
+            </div>
+          </div>
 
           <div className="proof-strip">
             {initiatives.stats.map((s) => (
@@ -44,18 +56,21 @@ export default function InitiativesPage() {
         </div>
       </section>
 
-      <section className="band">
+      <section className="band" data-avatar-mood="compassionate">
         <div className="band-inner">
           <div className="impact-word-mask" aria-label="IMPACT">
             <span>IMPACT</span>
           </div>
           <div className="pillars-grid">
             {initiatives.pillars.map((p) => (
-              <article key={p.index} className="pillar-item">
+              <article key={p.index} className="pillar-item" data-avatar-mood="serious-reading">
                 <span className="mono-label">{p.index}</span>
-                <h2 className="section-heading" style={{ fontSize: "clamp(1.5rem, 2.5vw, 2.25rem)" }}>
-                  {p.title}
-                </h2>
+                <WriteReveal
+                  as="h2"
+                  text={p.title}
+                  className="section-heading"
+                  style={{ fontSize: "clamp(1.5rem, 2.5vw, 2.25rem)" }}
+                />
                 <WriteReveal text={p.detail} className="lead-copy" />
               </article>
             ))}
@@ -63,7 +78,7 @@ export default function InitiativesPage() {
         </div>
       </section>
 
-      <section className="band">
+      <section className="band" data-avatar-mood="compassionate">
         <div className="band-inner">
           <p className="mono-label">Field Documentation · Northern Kenya &amp; Beyond</p>
           <div className="stagger-gallery">

@@ -148,11 +148,18 @@
     "title": "From Northern Kenya to UoN School of Medicine.",
     "lead": "Training to heal individuals in the clinic while organizing systems that serve thousands on campus and back home.",
     "bio": "Abdikhaliq Abdi (SG_AKASH) is a Medical Student (MBChB) at the University of Nairobi School of Medicine, Head of Public Service at the UNSA Council, former UNSA Chief of Staff (2025), and former Secretary General of the Association of Medical Students of the University of Nairobi (AMSUN, 2024). Guided by both bedside discipline and public accountability, his work links student welfare policy with grassroots educational mentorship across Northern Kenya.",
+    "brother": {
+      "kicker": "Brotherhood · Lifelong Anchor",
+      "heading": "My Brother's Influence: The Anchor Behind Every Step",
+      "quote": "“When you are in the arena, you need someone who reminds you why you entered it. My brother has been that voice from day one.”",
+      "text": "Behind every long clinical ward shift, late-night campus strategy session, and demanding institutional negotiation stands my brother. Growing up together in Northern Kenya with first-hand awareness of educational inequities, he wasn't just family—he was my first confidant, most honest critic, and most steadfast anchor. He taught me the quiet discipline of endurance: that true leadership is never about personal acclaim, but about honoring those who believed in you when doors were firmly shut. When the pressures of medical training and student public service mount, his wisdom returns me straight to our roots, our family, and our shared pledge to give back to the next generation.",
+      "mediaSlot": "about-brother"
+    },
     "chapters": [
       {
         "index": "01",
-        "heading": "Origins & Resilience",
-        "text": "Growing up with first-hand awareness of the educational gaps in Northern Kenya forged a lasting commitment: reaching the university gate is never the finish line—it is the obligation to hold that door open for the next student."
+        "heading": "Origins & Resilience in Northern Kenya",
+        "text": "Growing up in Northern Kenya with first-hand awareness of educational inequities forged an unshakeable conviction: reaching the university gate is never the finish line—it is the obligation to hold that door open for every student walking behind you."
       },
       {
         "index": "02",
@@ -211,6 +218,13 @@
         "text": "As Secretary General of AMSUN in 2024, championed clinical rotation schedules, academic welfare representation, and peer medical student unity at Kenyatta National Hospital campus.",
         "stat": "AMSUN",
         "slot": "leadership-achievement-3"
+      },
+      {
+        "index": "04",
+        "title": "Decisive 2024 AMSUN Secretary General Mandate",
+        "text": "Elected by medical students with 739 votes in the official 2024 AMSUN electronic ballot tally—a clear mandate for transparent student governance.",
+        "stat": "739 VOTES",
+        "slot": "leadership-achievement-4"
       }
     ]
   },

@@ -95,9 +95,6 @@ export function NavOverlay() {
         <div className="menu-overlay-head monitor-head-strip">
           <div className="monitor-vitals-row">
             <span className="monitor-pulse-dot" aria-hidden="true" />
-            <span className="mono-label">
-              LEAD II · 25MM/S · SPO2 99% · {content.owner.handle}
-            </span>
           </div>
           <button
             type="button"

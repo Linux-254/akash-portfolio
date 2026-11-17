@@ -40,16 +40,29 @@ export default function ContactPage() {
       <section className="band subpage-hero">
         <div className="band-inner">
           <p className="mono-label">{contact.kicker} · {owner.school}</p>
-          <h1 className="hero-headline" style={{ marginTop: "0.75rem" }}>
-            {contact.headline}
-          </h1>
+          <WriteReveal
+            as="h1"
+            text={contact.headline}
+            className="hero-headline"
+            style={{ marginTop: "0.75rem" }}
+            autoReveal
+          />
           <WriteReveal
             text={contact.text}
             className="lead-copy"
             style={{ marginTop: "1.4rem" }}
+            autoReveal
           />
 
           <div className="contact-giant-list">
+            <div className="contact-giant-line" style={{ borderTop: 0, paddingBottom: "1rem" }}>
+              <span className="mono-label">Official Channel</span>
+              <span>Abdikhaliq Abdi · @akash_icekid</span>
+            </div>
+            <a href="https://www.instagram.com/akash_icekid" target="_blank" rel="noopener noreferrer" className="contact-giant-line">
+              <span className="mono-label">Instagram Channel ↗</span>
+              <span>@akash_icekid</span>
+            </a>
             <a href={`mailto:${contact.email}`} className="contact-giant-line">
               <span className="mono-label">Email Dispatch</span>
               <span>{contact.email}</span>
@@ -68,10 +81,10 @@ export default function ContactPage() {
               </a>
             ))}
 
-            <div className="contact-giant-line">
-              <span className="mono-label">TikTok &amp; Instagram</span>
+            <a href="https://www.tiktok.com/@sg_akash" target="_blank" rel="noopener noreferrer" className="contact-giant-line">
+              <span className="mono-label">TikTok Archive ↗</span>
               <span>{contact.tiktok}</span>
-            </div>
+            </a>
           </div>
 
           <div className="whatsapp-composer" aria-label="WhatsApp message form">
